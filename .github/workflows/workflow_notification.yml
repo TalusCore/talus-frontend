@@ -1,0 +1,30 @@
+name: Notify Discord on Workflow Completion
+
+on:
+  workflow_run:
+    workflows: ["Lint Code"]
+    types:
+      - completed
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          NAME: ${{ github.event.workflow_run.name }}
+          STATUS: ${{ github.event.workflow_run.conclusion }}
+          REPO: ${{ github.repository }}
+          URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          ICON="✅"
+          if [ "$STATUS" != "success" ]; then
+            ICON="❌"
+          fi
+
+          MESSAGE="${ICON} Workflow **${NAME}** completed with status: **${STATUS}**\nRepo: ${REPO}\n<${URL}>"
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": \"$MESSAGE\"}" \
+            $DISCORD_WEBHOOK
