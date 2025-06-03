@@ -2,7 +2,9 @@ name: Print workflow_run event
 
 on:
   workflow_run:
-    types: [requested, completed]
+    workflows: ['Notify Discord on Workflow Completion']
+    types:
+      - completed
 
 jobs:
   print-workflow-run:
