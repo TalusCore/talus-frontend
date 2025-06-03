@@ -10,6 +10,9 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Echo workflow_run JSON
+        run: echo '${{ toJson(github.event.workflow_run) }}'
+
       - name: Notify Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
