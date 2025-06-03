@@ -10,36 +10,35 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Echo workflow_run JSON
-        run: echo '${{ toJson(github.event.workflow_run) }}'
-
       - name: Notify Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           NAME: ${{ github.event.workflow_run.name }}
           STATUS: ${{ github.event.workflow_run.conclusion }}
           REPO: ${{ github.repository }}
-          URL: ${{ github.event.workflow_run.html_url }}
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
         run: |
           ICON="✅"
           if [ "$STATUS" != "success" ]; then
             ICON="❌"
           fi
 
-          PR_NUMBER=""
-          if [[ "$HEAD_BRANCH" == "refs/pull/"* ]]; then
-            PR_NUMBER=$(echo "$HEAD_BRANCH" | sed -n 's#refs/pull/\([0-9]*\)/.*#\1#p')
-          fi
-
-          PR_INFO=""
           if [ -n "$PR_NUMBER" ]; then
-            PR_INFO="\n🔗 PR: https://github.com/${REPO}/pull/${PR_NUMBER}"
+            PR_URL="https://github.com/${REPO}/pull/${PR_NUMBER}"
+
+            STATUS_MESSAGE=""
+            if [ "$STATUS" = "success" ]; then
+              STATUS_MESSAGE="PR is ready for review!"
+            else
+              STATUS_MESSAGE="PR build failed, please check the workflow logs."
+            fi
+
+            MESSAGE="${ICON} Workflow **${NAME}** completed with status: **${STATUS}**\n${STATUS_MESSAGE}\n🔗 PR: ${PR_URL}"
+
+            curl -H "Content-Type: application/json" \
+                -X POST \
+                -d "{\"content\": \"$MESSAGE\"}" \
+                $DISCORD_WEBHOOK
+          else
+            echo "No PR found, skipping Discord notification."
           fi
-
-          MESSAGE="${ICON} Workflow **${NAME}** completed with status: **${STATUS}**\nRepo: ${REPO}${PR_INFO}\n<${URL}>"
-
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{\"content\": \"$MESSAGE\"}" \
-               $DISCORD_WEBHOOK
