@@ -28,6 +28,16 @@ const RootLayout = (): React.JSX.Element => {
             }
           }}
         />
+        <Stack.Screen
+          name="qrCodeScanner"
+          options={{
+            title: 'QR Code Scanner',
+            headerTintColor: '#fff',
+            headerStyle: {
+              backgroundColor: '#25292e'
+            }
+          }}
+        />
       </Stack>
     </SafeAreaProvider>
   );
