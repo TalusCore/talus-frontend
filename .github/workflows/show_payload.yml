@@ -1,0 +1,16 @@
+name: Print workflow_run event
+
+on:
+  workflow_run:
+    types: [requested, completed]
+
+jobs:
+  print-workflow-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print github.event.workflow_run
+        env:
+          WORKFLOW_RUN: ${{ toJson(github.event.workflow_run) }}
+        run: |
+          echo "Workflow run event payload:"
+          echo "$WORKFLOW_RUN"
