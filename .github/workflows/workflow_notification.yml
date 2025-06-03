@@ -2,7 +2,7 @@ name: Notify Discord on Workflow Completion
 
 on:
   workflow_run:
-    workflows: ["Lint Code"]
+    workflows: ['Lint Code']
     types:
       - completed
 
@@ -17,14 +17,26 @@ jobs:
           STATUS: ${{ github.event.workflow_run.conclusion }}
           REPO: ${{ github.repository }}
           URL: ${{ github.event.workflow_run.html_url }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           ICON="✅"
           if [ "$STATUS" != "success" ]; then
             ICON="❌"
           fi
 
-          MESSAGE="${ICON} Workflow **${NAME}** completed with status: **${STATUS}**\nRepo: ${REPO}\n<${URL}>"
+          PR_NUMBER=""
+          if [[ "$HEAD_BRANCH" == "refs/pull/"* ]]; then
+            PR_NUMBER=$(echo "$HEAD_BRANCH" | sed -n 's#refs/pull/\([0-9]*\)/.*#\1#p')
+          fi
+
+          PR_INFO=""
+          if [ -n "$PR_NUMBER" ]; then
+            PR_INFO="\n🔗 PR: https://github.com/${REPO}/pull/${PR_NUMBER}"
+          fi
+
+          MESSAGE="${ICON} Workflow **${NAME}** completed with status: **${STATUS}**\nRepo: ${REPO}${PR_INFO}\n<${URL}>"
+
           curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{\"content\": \"$MESSAGE\"}" \
-            $DISCORD_WEBHOOK
+               -X POST \
+               -d "{\"content\": \"$MESSAGE\"}" \
+               $DISCORD_WEBHOOK
