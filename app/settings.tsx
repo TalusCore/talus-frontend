@@ -1,10 +1,21 @@
 import styles from '@/components/styles';
-import { Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { View } from 'react-native';
+import { Button } from 'react-native-paper';
 
 const Settings = (): React.JSX.Element => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>This is the settings page</Text>
+    <View style={styles.settings}>
+      <Button
+        mode="contained"
+        icon="camera"
+        onPress={() => {
+          router.push('/qrCodeScanner');
+        }}
+        style={{ marginBottom: 20 }}
+      >
+        Pair New Device
+      </Button>
     </View>
   );
 };
