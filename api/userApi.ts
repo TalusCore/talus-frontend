@@ -1,58 +1,47 @@
 import { capitalizeFirstLetter } from '@/components/utils';
 import apiClient from './apiClient';
 
-export const login = async (
-  email: string,
-  password: string
-): Promise<{
+type UserResponse = {
   firstName?: string;
   email?: string;
   success: boolean;
   error?: string;
-}> => {
-  console.log('Logging in with email:', email);
-  try {
-    const response = await apiClient.post('/users/login', { email, password });
-    return {
-      firstName: response.data.firstName,
-      email: response.data.email,
-      success: true
-    };
-  } catch (error) {
-    console.log(
-      'Login error:',
-      (error as { response: { data: { message: string } } }).response.data
-        .message ?? error
-    );
-    return {
-      success: false,
-      error:
-        (error as { response: { data: { message: string } } }).response.data
-          .message ?? error
-    };
-  }
+};
+
+type ErrorResponse = { response: { data: { message: string } } };
+
+export const login = async (
+  email: string,
+  password: string
+): Promise<UserResponse> => {
+  const body = {
+    email,
+    password
+  };
+
+  return callUserApi('login', body);
 };
 
 export const signup = async (
   firstName: string,
   email: string,
   password: string
-): Promise<{
-  firstName?: string;
-  email?: string;
-  success: boolean;
-  error?: string;
-}> => {
-  try {
-    if (!firstName || !email || !password) {
-      throw new Error('All fields are required for signup.');
-    }
+): Promise<UserResponse> => {
+  const body = {
+    name: firstName,
+    email,
+    password
+  };
 
-    const response = await apiClient.post('/users/signup', {
-      name: firstName,
-      email,
-      password
-    });
+  return callUserApi('signup', body);
+};
+
+const callUserApi = async (
+  type: string,
+  body: { name?: string; email: string; password: string }
+): Promise<UserResponse> => {
+  try {
+    const response = await apiClient.post(`/users/${type}`, body);
     return {
       firstName: capitalizeFirstLetter(response.data.name, 'User'),
       email: response.data.email,
@@ -60,15 +49,13 @@ export const signup = async (
     };
   } catch (error) {
     console.log(
-      'Signup error:',
-      (error as { response: { data: { message: string } } }).response.data
-        .message ?? error
+      type,
+      'error:',
+      (error as ErrorResponse).response.data.message ?? error
     );
     return {
       success: false,
-      error:
-        (error as { response: { data: { message: string } } }).response.data
-          .message ?? error
+      error: (error as ErrorResponse).response.data.message ?? error
     };
   }
 };
