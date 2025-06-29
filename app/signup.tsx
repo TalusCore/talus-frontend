@@ -9,8 +9,10 @@ import { Button, TextInput } from 'react-native-paper';
 const SignUp = (): React.JSX.Element => {
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
+  const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
   const [firstNameError, setFirstNameError] = useState(false);
+  const [lastNameError, setLastNameError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -23,6 +25,13 @@ const SignUp = (): React.JSX.Element => {
       hasError = true;
     } else {
       setFirstNameError(false);
+    }
+
+    if (!lastName.trim()) {
+      setLastNameError(true);
+      hasError = true;
+    } else {
+      setLastNameError(false);
     }
 
     if (!email.trim()) {
@@ -40,7 +49,7 @@ const SignUp = (): React.JSX.Element => {
     }
 
     if (!hasError) {
-      const signUpData = await signup(firstName, email, password);
+      const signUpData = await signup(firstName, lastName, email, password);
 
       if (signUpData.success) {
         console.log('Sign up successful:', signUpData);
@@ -68,6 +77,17 @@ const SignUp = (): React.JSX.Element => {
         value={firstName}
         onChangeText={setFirstName}
         error={firstNameError}
+      />
+      <TextInput
+        label="Last Name"
+        mode="flat"
+        style={{ width: '80%', marginTop: 20 }}
+        autoCapitalize="words"
+        placeholder="Enter your last name"
+        autoComplete="family-name"
+        value={lastName}
+        onChangeText={setLastName}
+        error={lastNameError}
       />
       <TextInput
         label="Email"

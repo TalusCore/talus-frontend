@@ -3,6 +3,7 @@ import apiClient from './apiClient';
 
 type UserResponse = {
   firstName?: string;
+  lastName?: string;
   email?: string;
   success: boolean;
   error?: string;
@@ -24,11 +25,13 @@ export const login = async (
 
 export const signup = async (
   firstName: string,
+  lastName: string,
   email: string,
   password: string
 ): Promise<UserResponse> => {
   const body = {
-    name: firstName,
+    firstName,
+    lastName,
     email,
     password
   };
@@ -38,12 +41,18 @@ export const signup = async (
 
 const callUserApi = async (
   type: string,
-  body: { name?: string; email: string; password: string }
+  body: {
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    password: string;
+  }
 ): Promise<UserResponse> => {
   try {
     const response = await apiClient.post(`/users/${type}`, body);
     return {
-      firstName: capitalizeFirstLetter(response.data.name, 'User'),
+      firstName: capitalizeFirstLetter(response.data.firstName, 'User'),
+      lastName: capitalizeFirstLetter(response.data.lastName, 'User'),
       email: response.data.email,
       success: true
     };
