@@ -53,6 +53,7 @@ const SignUp = (): React.JSX.Element => {
 
       if (signUpData.success) {
         console.log('Sign up successful:', signUpData);
+        router.dismissAll();
         router.replace('/home');
       } else {
         const errorMsg = capitalizeFirstLetter(
