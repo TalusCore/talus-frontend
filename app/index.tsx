@@ -35,6 +35,7 @@ const Login = (): React.JSX.Element => {
 
       if (loginData.success) {
         console.log('Login successful:', loginData);
+        router.dismissAll();
         router.replace('/home');
       } else {
         const errorMsg = capitalizeFirstLetter(
