@@ -34,7 +34,6 @@ const Login = (): React.JSX.Element => {
       const loginData = await login(email, password);
 
       if (loginData.success) {
-        console.log('Login successful:', loginData);
         router.replace('/home');
       } else {
         const errorMsg = capitalizeFirstLetter(

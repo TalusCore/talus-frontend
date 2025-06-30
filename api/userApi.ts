@@ -57,14 +57,9 @@ const callUserApi = async (
       success: true
     };
   } catch (error) {
-    console.log(
-      type,
-      'error:',
-      (error as ErrorResponse).response.data.message ?? error
-    );
     return {
       success: false,
-      error: (error as ErrorResponse).response.data.message ?? error
+      error: (error as ErrorResponse).response.data.message ?? String(error)
     };
   }
 };

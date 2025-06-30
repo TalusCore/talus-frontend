@@ -16,11 +16,9 @@ const handleQrCodeScanned = (
 
   if (data.startsWith(ID_PREFIX)) {
     const id = data.split(ID_PREFIX)[1];
-    console.log('QR Code scanned:', data);
     setScannedId(id);
     setValidId(true);
   } else {
-    console.log('Invalid QR code scanned:', data);
     setScannedId(null);
     setValidId(false);
   }

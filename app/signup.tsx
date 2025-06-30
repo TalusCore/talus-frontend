@@ -52,7 +52,6 @@ const SignUp = (): React.JSX.Element => {
       const signUpData = await signup(firstName, lastName, email, password);
 
       if (signUpData.success) {
-        console.log('Sign up successful:', signUpData);
         router.dismissAll();
         router.replace('/home');
       } else {
