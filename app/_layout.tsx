@@ -6,9 +6,29 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 const RootLayout = (): React.JSX.Element => {
   return (
     <SafeAreaProvider>
-      <Stack>
+      <Stack initialRouteName="index">
         <Stack.Screen
           name="index"
+          options={{
+            title: 'Login',
+            headerTintColor: '#fff',
+            headerStyle: {
+              backgroundColor: '#25292e'
+            }
+          }}
+        />
+        <Stack.Screen
+          name="signup"
+          options={{
+            title: 'Sign Up',
+            headerTintColor: '#fff',
+            headerStyle: {
+              backgroundColor: '#25292e'
+            }
+          }}
+        />
+        <Stack.Screen
+          name="home"
           options={{
             title: 'Home',
             headerRight: SettingsButton,
