@@ -1,12 +1,14 @@
 import { login } from '@/api/userApi';
 import styles from '@/components/styles';
 import { capitalizeFirstLetter } from '@/components/utils';
+import { AuthContext } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 
 const Login = (): React.JSX.Element => {
+  const { signIn } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState(false);
@@ -34,6 +36,11 @@ const Login = (): React.JSX.Element => {
       const loginData = await login(email, password);
 
       if (loginData.success) {
+        signIn({
+          firstName: loginData.firstName!,
+          lastName: loginData.lastName!,
+          email: loginData.email!
+        });
         router.replace('/home');
       } else {
         const errorMsg = capitalizeFirstLetter(

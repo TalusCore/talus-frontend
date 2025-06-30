@@ -1,12 +1,14 @@
 import { signup } from '@/api/userApi';
 import styles from '@/components/styles';
 import { capitalizeFirstLetter } from '@/components/utils';
+import { AuthContext } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 
 const SignUp = (): React.JSX.Element => {
+  const { signIn } = useContext(AuthContext);
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [lastName, setLastName] = useState('');
@@ -52,6 +54,11 @@ const SignUp = (): React.JSX.Element => {
       const signUpData = await signup(firstName, lastName, email, password);
 
       if (signUpData.success) {
+        signIn({
+          firstName: signUpData.firstName!,
+          lastName: signUpData.lastName!,
+          email: signUpData.email!
+        });
         router.dismissAll();
         router.replace('/home');
       } else {
