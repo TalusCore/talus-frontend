@@ -134,7 +134,7 @@ const QrCodeScanner = (): React.JSX.Element => {
         <TextInput
           label="Talus name"
           mode="flat"
-          style={{ width: '80%', marginTop: 20 }}
+          style={styles.textInput}
           value={talusName}
           onChangeText={setTalusName}
           autoCapitalize="words"
@@ -142,9 +142,7 @@ const QrCodeScanner = (): React.JSX.Element => {
           autoComplete="name"
           error={talusNameError}
         />
-        {errorMessage ? (
-          <Text style={{ color: 'red', marginTop: 20 }}>{errorMessage}</Text>
-        ) : null}
+        {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
         <Button
           mode="contained"
           icon="check"

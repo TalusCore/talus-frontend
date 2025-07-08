@@ -1,5 +1,5 @@
 import { capitalizeFirstLetter } from '@/components/utils';
-import apiClient from './apiClient';
+import apiClient, { type ErrorResponse } from './apiClient';
 
 type TalusInfo = {
   email?: string;
@@ -13,8 +13,6 @@ type TalusParams = {
   talusId: string;
   name: string;
 };
-
-type ErrorResponse = { response: { data: { message: string } } };
 
 export const pairTalus = async (
   talusParams: TalusParams
