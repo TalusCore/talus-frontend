@@ -1,4 +1,4 @@
-import { pairTalus } from '@/api/talusApi';
+import { getTalus, pairTalus } from '@/api/talusApi';
 import styles from '@/components/styles';
 import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
@@ -7,28 +7,51 @@ import { router } from 'expo-router';
 import React, { useContext, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
+import validator from 'validator';
 
 const ID_PREFIX = 'talus-code/';
 let isFirstScan = true;
 
-const handleQrCodeScanned = (
+const handleQrCodeScanned = async (
   event: { data: string },
   setScannedId: (id: string | null) => void,
-  setValidId: (isValid: boolean) => void
-): void => {
+  setIsValid: (isValid: boolean) => void,
+  setErrorMessage: (message: string) => void
+): Promise<void> => {
   const { data } = event;
 
-  if (data.startsWith(ID_PREFIX)) {
-    const id = data.split(ID_PREFIX)[1];
+  if (isFirstScan) {
+    isFirstScan = false;
 
-    if (isFirstScan) {
-      isFirstScan = false;
-      setScannedId(id);
-      setValidId(true);
+    if (data.startsWith(ID_PREFIX)) {
+      const id = data.split(ID_PREFIX)[1];
+
+      if (validator.isUUID(id)) {
+        const existingTalus = await getTalus(id);
+        console.log('Existing Talus:', existingTalus.success);
+
+        if (!existingTalus.success) {
+          setScannedId(id);
+          setIsValid(true);
+          return;
+        } else {
+          setErrorMessage(
+            `Talus already exists. Please scan a different Talus.`
+          );
+        }
+      } else {
+        setErrorMessage(
+          'Invalid Talus ID format. Please scan a valid Talus QR code.'
+        );
+      }
+    } else {
+      setErrorMessage(
+        'Invalid QR code format. Please scan a valid Talus QR code.'
+      );
     }
-  } else {
+
     setScannedId(null);
-    setValidId(false);
+    setIsValid(false);
   }
 };
 
@@ -66,7 +89,7 @@ const QrCodeScanner = (): React.JSX.Element => {
   const { user } = useContext(AuthContext);
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedId, setScannedId] = useState<string | null>(null);
-  const [validId, setValidId] = useState<boolean>(true);
+  const [isValid, setIsValid] = useState<boolean>(true);
   const [talusName, setTalusName] = useState<string>('');
   const [talusNameError, setTalusNameError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -96,15 +119,17 @@ const QrCodeScanner = (): React.JSX.Element => {
     );
   }
 
-  if (!validId) {
+  if (!isValid) {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>Invalid QR code scanned</Text>
+        <Text style={styles.text}>{errorMessage}</Text>
         <Button
           mode="contained"
           icon="camera"
           onPress={() => {
-            setValidId(true);
+            setIsValid(true);
+            setErrorMessage('');
+            isFirstScan = true;
           }}
           style={{ marginTop: 20 }}
         >
@@ -120,7 +145,7 @@ const QrCodeScanner = (): React.JSX.Element => {
         style={{ flex: 1 }}
         facing="back"
         onBarcodeScanned={event =>
-          handleQrCodeScanned(event, setScannedId, setValidId)
+          handleQrCodeScanned(event, setScannedId, setIsValid, setErrorMessage)
         }
         barcodeScannerSettings={{
           barcodeTypes: ['qr']
