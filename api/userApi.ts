@@ -1,5 +1,5 @@
 import { capitalizeFirstLetter } from '@/components/utils';
-import apiClient from './apiClient';
+import apiClient, { type ErrorResponse } from './apiClient';
 
 type UserResponse = {
   firstName?: string;
@@ -9,7 +9,18 @@ type UserResponse = {
   error?: string;
 };
 
-type ErrorResponse = { response: { data: { message: string } } };
+type TalusResponse = {
+  talusId?: string;
+  name?: string;
+  success: boolean;
+  error?: string;
+};
+
+type TalusListResponse = {
+  taluses?: { talusId: string; name: string }[];
+  success: boolean;
+  error?: string;
+};
 
 export const login = async (
   email: string,
@@ -54,6 +65,49 @@ const callUserApi = async (
       firstName: capitalizeFirstLetter(response.data.firstName, 'User'),
       lastName: capitalizeFirstLetter(response.data.lastName, 'User'),
       email: response.data.email,
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as ErrorResponse).response.data.message ?? String(error)
+    };
+  }
+};
+
+export const getMostRecentTalus = async (
+  email: string
+): Promise<TalusResponse> => {
+  try {
+    const response = await apiClient.get(`/users/most-recent-talus`, {
+      params: { email }
+    });
+    return {
+      talusId: response.data.talusId,
+      name: capitalizeFirstLetter(response.data.name, 'Talus'),
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as ErrorResponse).response.data.message ?? String(error)
+    };
+  }
+};
+
+export const getTalusList = async (
+  email: string
+): Promise<TalusListResponse> => {
+  try {
+    const response = await apiClient.get(`/users/all-taluses`, {
+      params: { email }
+    });
+    const taluses = response.data.map((talus: TalusResponse) => ({
+      talusId: talus.talusId,
+      name: capitalizeFirstLetter(talus.name, 'Talus')
+    }));
+    return {
+      taluses,
       success: true
     };
   } catch (error) {

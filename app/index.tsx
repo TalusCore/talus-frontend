@@ -7,6 +7,8 @@ import { useContext, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 
+import { StyleSheet } from 'react-native';
+
 const Login = (): React.JSX.Element => {
   const { signIn } = useContext(AuthContext);
   const [email, setEmail] = useState('');
@@ -53,13 +55,13 @@ const Login = (): React.JSX.Element => {
   };
 
   return (
-    <View style={{ ...styles.container, justifyContent: 'space-evenly' }}>
-      <View style={{ width: '100%', alignItems: 'center' }}>
+    <View style={loginStyles.container}>
+      <View style={loginStyles.centeredFullWidth}>
         <Text style={styles.text}>Please sign in to continue.</Text>
         <TextInput
           label="Email"
           mode="flat"
-          style={{ width: '80%', marginTop: 20 }}
+          style={styles.textInput}
           autoCapitalize="none"
           keyboardType="email-address"
           autoComplete="email"
@@ -71,16 +73,14 @@ const Login = (): React.JSX.Element => {
         <TextInput
           label="Password"
           mode="flat"
-          style={{ width: '80%', marginTop: 20 }}
+          style={styles.textInput}
           secureTextEntry
           placeholder="Enter your password"
           value={password}
           onChangeText={setPassword}
           error={passwordError}
         />
-        {errorMessage ? (
-          <Text style={{ color: 'red', marginTop: 20 }}>{errorMessage}</Text>
-        ) : null}
+        {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
         <Button
           mode="contained"
           icon="login"
@@ -90,7 +90,7 @@ const Login = (): React.JSX.Element => {
           Sign In
         </Button>
       </View>
-      <View style={{ width: '100%', alignItems: 'center' }}>
+      <View style={loginStyles.centeredFullWidth}>
         <Text style={styles.text}>Don't have an account?</Text>
         <Button
           mode="contained"
@@ -106,5 +106,13 @@ const Login = (): React.JSX.Element => {
     </View>
   );
 };
+
+const loginStyles = StyleSheet.create({
+  container: { ...styles.container, justifyContent: 'space-evenly' },
+  centeredFullWidth: {
+    width: '100%',
+    alignItems: 'center'
+  }
+});
 
 export default Login;

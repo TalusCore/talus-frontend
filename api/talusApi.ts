@@ -1,5 +1,11 @@
 import { capitalizeFirstLetter } from '@/components/utils';
-import apiClient from './apiClient';
+import apiClient, { type ErrorResponse } from './apiClient';
+
+type TalusId = {
+  talusId?: string;
+  error?: string;
+  success: boolean;
+};
 
 type TalusInfo = {
   email?: string;
@@ -14,7 +20,22 @@ type TalusParams = {
   name: string;
 };
 
-type ErrorResponse = { response: { data: { message: string } } };
+export const getTalus = async (id: string): Promise<TalusId> => {
+  try {
+    const response = await apiClient.get(`/talus`, {
+      params: { talusId: id }
+    });
+    return {
+      talusId: response.data.talusId,
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as ErrorResponse).response.data.message ?? String(error)
+    };
+  }
+};
 
 export const pairTalus = async (
   talusParams: TalusParams

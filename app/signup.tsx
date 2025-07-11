@@ -77,7 +77,7 @@ const SignUp = (): React.JSX.Element => {
       <TextInput
         label="First Name"
         mode="flat"
-        style={{ width: '80%', marginTop: 20 }}
+        style={styles.textInput}
         autoCapitalize="words"
         placeholder="Enter your first name"
         autoComplete="given-name"
@@ -88,7 +88,7 @@ const SignUp = (): React.JSX.Element => {
       <TextInput
         label="Last Name"
         mode="flat"
-        style={{ width: '80%', marginTop: 20 }}
+        style={styles.textInput}
         autoCapitalize="words"
         placeholder="Enter your last name"
         autoComplete="family-name"
@@ -99,7 +99,7 @@ const SignUp = (): React.JSX.Element => {
       <TextInput
         label="Email"
         mode="flat"
-        style={{ width: '80%', marginTop: 20 }}
+        style={styles.textInput}
         autoCapitalize="none"
         keyboardType="email-address"
         autoComplete="email"
@@ -111,16 +111,14 @@ const SignUp = (): React.JSX.Element => {
       <TextInput
         label="Password"
         mode="flat"
-        style={{ width: '80%', marginTop: 20 }}
+        style={styles.textInput}
         secureTextEntry
         placeholder="Enter your password"
         value={password}
         onChangeText={setPassword}
         error={passwordError}
       />
-      {errorMessage ? (
-        <Text style={{ color: 'red', marginTop: 20 }}>{errorMessage}</Text>
-      ) : null}
+      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
       <Button
         mode="contained"
         icon="account-plus"

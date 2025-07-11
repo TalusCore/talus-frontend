@@ -16,7 +16,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 20,
     textAlign: 'center'
-  }
+  },
+  textInput: {
+    width: '80%',
+    marginTop: 20
+  },
+  error: { color: 'red', marginTop: 20 }
 });
 
 export default styles;
