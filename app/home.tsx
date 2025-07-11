@@ -47,6 +47,10 @@ const Home = (): React.JSX.Element => {
 
   useFocusEffect(
     useCallback(() => {
+      setHeartRate([]);
+      setSteps([]);
+      lastUpdate.current = null;
+
       const fetchData = (): void => {
         if (!talus) {
           return;
@@ -55,7 +59,7 @@ const Home = (): React.JSX.Element => {
         fetchStats({
           talusId: talus?.talusId,
           startTime:
-            lastUpdate.current ?? new Date(Date.now() - 1000 * 60 * 60 * 24)
+            lastUpdate.current ?? new Date(new Date().setHours(0, 0, 0, 0))
         })
           .then(response => {
             if (response.success) {
