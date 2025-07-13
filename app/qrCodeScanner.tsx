@@ -28,7 +28,6 @@ const handleQrCodeScanned = async (
 
       if (validator.isUUID(id)) {
         const existingTalus = await getTalus(id);
-        console.log('Existing Talus:', existingTalus.success);
 
         if (!existingTalus.success) {
           setScannedId(id);
