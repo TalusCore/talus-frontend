@@ -1,5 +1,6 @@
+import type { ErrorResponse, Talus } from '@/components/types';
 import { capitalizeFirstLetter } from '@/components/utils';
-import apiClient, { type ErrorResponse } from './apiClient';
+import apiClient from './apiClient';
 
 type TalusId = {
   talusId?: string;
@@ -14,10 +15,8 @@ type TalusInfo = {
   success: boolean;
 };
 
-type TalusParams = {
+type TalusParams = Talus & {
   email: string;
-  talusId: string;
-  name: string;
 };
 
 export const getTalus = async (id: string): Promise<TalusId> => {
@@ -42,6 +41,45 @@ export const pairTalus = async (
 ): Promise<TalusInfo> => {
   try {
     const response = await apiClient.post(`/talus`, talusParams);
+    return {
+      email: response.data.email,
+      talusName: capitalizeFirstLetter(response.data.talusName, 'Talus'),
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as ErrorResponse).response.data.message ?? String(error)
+    };
+  }
+};
+
+export const deleteTalus = async (talusId: string): Promise<TalusId> => {
+  try {
+    const response = await apiClient.delete(`/talus`, {
+      params: { talusId }
+    });
+    return {
+      talusId: response.data.talusId,
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as ErrorResponse).response.data.message ?? String(error)
+    };
+  }
+};
+
+export const renameTalus = async (
+  talusId: string,
+  newName: string
+): Promise<TalusInfo> => {
+  try {
+    const response = await apiClient.put(`/talus`, {
+      talusId,
+      name: newName
+    });
     return {
       email: response.data.email,
       talusName: capitalizeFirstLetter(response.data.talusName, 'Talus'),

@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-export type ErrorResponse = { response: { data: { message: string } } };
-
 const apiClient = axios.create({
   // Replace with your LAN IP address for mobile testing
   baseURL: 'http://localhost:3000/api',

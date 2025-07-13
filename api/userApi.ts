@@ -1,5 +1,6 @@
+import type { ErrorResponse, Talus, User } from '@/components/types';
 import { capitalizeFirstLetter } from '@/components/utils';
-import apiClient, { type ErrorResponse } from './apiClient';
+import apiClient from './apiClient';
 
 type UserResponse = {
   firstName?: string;
@@ -9,15 +10,13 @@ type UserResponse = {
   error?: string;
 };
 
-type TalusResponse = {
-  talusId?: string;
-  name?: string;
+type TalusResponse = Partial<Talus> & {
   success: boolean;
   error?: string;
 };
 
 type TalusListResponse = {
-  taluses?: { talusId: string; name: string }[];
+  taluses?: Talus[];
   success: boolean;
   error?: string;
 };
@@ -116,4 +115,29 @@ export const getTalusList = async (
       error: (error as ErrorResponse).response.data.message ?? String(error)
     };
   }
+};
+
+export const updateTalusOptions = (
+  user: User | null,
+  setTalusOptions: (taluses: Talus[]) => void
+): void => {
+  if (!user) {
+    setTalusOptions([]);
+
+    return;
+  }
+
+  getTalusList(user.email)
+    .then(response => {
+      if (response.success) {
+        if (response.taluses && response.taluses.length > 0) {
+          setTalusOptions(response.taluses);
+        }
+      } else {
+        console.error(response.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching talus list:', error);
+    });
 };

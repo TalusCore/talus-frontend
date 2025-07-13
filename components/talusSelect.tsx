@@ -1,17 +1,16 @@
-import { getTalusList } from '@/api/userApi';
+import { updateTalusOptions } from '@/api/userApi';
 import { AuthContext } from '@/contexts/AuthContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { usePathname } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Button, Card, Modal, Portal } from 'react-native-paper';
-
-type Talus = {
-  talusId: string;
-  name: string;
-};
+import { Button, Card } from 'react-native-paper';
+import ModalPopUp from './modalPopUp';
+import type { Talus } from './types';
 
 const TalusSelect = (): React.JSX.Element => {
   const { talus, user, selectTalus } = useContext(AuthContext);
+  const pathname = usePathname();
   const [talusOptions, setTalusOptions] = useState<Talus[]>([]);
   const [visible, setVisible] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState(
@@ -19,20 +18,10 @@ const TalusSelect = (): React.JSX.Element => {
   );
 
   useEffect(() => {
-    getTalusList(user!.email)
-      .then(response => {
-        if (response.success) {
-          if (response.taluses && response.taluses.length > 0) {
-            setTalusOptions(response.taluses);
-          }
-        } else {
-          console.error(response.error);
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching talus list:', error);
-      });
-  }, [user]);
+    if (pathname === '/home') {
+      updateTalusOptions(user, setTalusOptions);
+    }
+  }, [pathname, user]);
 
   useEffect(() => {
     if (talus?.name !== undefined) {
@@ -58,23 +47,27 @@ const TalusSelect = (): React.JSX.Element => {
           </View>
         </Card>
       </TouchableOpacity>
-      <Portal>
-        <Modal
-          visible={visible}
-          onDismiss={() => setVisible(false)}
-          contentContainerStyle={talusSelectStyles.modalContainer}
-        >
+      <ModalPopUp visible={visible} handleClose={() => setVisible(false)}>
+        <View>
           <Text style={talusSelectStyles.modalTitle}>Select Device</Text>
           {talusOptions.map((device, index) => (
-            <Button key={index} onPress={() => handleSelect(device)}>
+            <Button
+              key={index}
+              onPress={() => handleSelect(device)}
+              mode="text"
+            >
               <Text style={talusSelectStyles.cardText}>{device.name}</Text>
             </Button>
           ))}
-          <Button onPress={() => setVisible(false)} style={{ marginTop: 10 }}>
+          <Button
+            onPress={() => setVisible(false)}
+            mode="text"
+            style={{ marginTop: 10 }}
+          >
             <Text style={talusSelectStyles.cardText}>Cancel</Text>
           </Button>
-        </Modal>
-      </Portal>
+        </View>
+      </ModalPopUp>
     </>
   );
 };
