@@ -1,11 +1,15 @@
+import { pairTalus } from '@/api/talusApi';
 import styles from '@/components/styles';
+import { capitalizeFirstLetter } from '@/components/utils';
+import { AuthContext } from '@/contexts/AuthContext';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Text, View } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 
 const ID_PREFIX = 'talus-code/';
+let isFirstScan = true;
 
 const handleQrCodeScanned = (
   event: { data: string },
@@ -16,18 +20,56 @@ const handleQrCodeScanned = (
 
   if (data.startsWith(ID_PREFIX)) {
     const id = data.split(ID_PREFIX)[1];
-    setScannedId(id);
-    setValidId(true);
+
+    if (isFirstScan) {
+      isFirstScan = false;
+      setScannedId(id);
+      setValidId(true);
+    }
   } else {
     setScannedId(null);
     setValidId(false);
   }
 };
 
+const handleTalusPairing = async (
+  talusName: string,
+  email: string,
+  id: string,
+  setTalusNameError: (error: boolean) => void,
+  setErrorMessage: (message: string) => void
+): Promise<void> => {
+  if (talusName.trim() === '') {
+    setTalusNameError(true);
+  } else {
+    setTalusNameError(false);
+    const talusInfo = await pairTalus({
+      email: email,
+      talusId: id,
+      name: talusName
+    });
+
+    if (talusInfo.success) {
+      router.dismissAll();
+      router.replace('/home');
+    } else {
+      const errorMsg = capitalizeFirstLetter(
+        talusInfo.error,
+        'Invalid Device Name.'
+      );
+      setErrorMessage(errorMsg);
+    }
+  }
+};
+
 const QrCodeScanner = (): React.JSX.Element => {
+  const { user } = useContext(AuthContext);
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedId, setScannedId] = useState<string | null>(null);
   const [validId, setValidId] = useState<boolean>(true);
+  const [talusName, setTalusName] = useState<string>('');
+  const [talusNameError, setTalusNameError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   if (!permission) {
     return (
@@ -88,17 +130,36 @@ const QrCodeScanner = (): React.JSX.Element => {
   } else {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>Talus paired!</Text>
+        <Text style={styles.text}>Talus scanned!</Text>
+        <TextInput
+          label="Talus name"
+          mode="flat"
+          style={{ width: '80%', marginTop: 20 }}
+          value={talusName}
+          onChangeText={setTalusName}
+          autoCapitalize="words"
+          placeholder="Enter a name for your Talus"
+          autoComplete="name"
+          error={talusNameError}
+        />
+        {errorMessage ? (
+          <Text style={{ color: 'red', marginTop: 20 }}>{errorMessage}</Text>
+        ) : null}
         <Button
           mode="contained"
           icon="check"
-          onPress={() => {
-            router.dismissAll();
-            router.replace('/');
-          }}
+          onPress={() =>
+            handleTalusPairing(
+              talusName,
+              user?.email ?? '',
+              scannedId,
+              setTalusNameError,
+              setErrorMessage
+            )
+          }
           style={{ marginTop: 20 }}
         >
-          Return
+          Pair
         </Button>
       </View>
     );
