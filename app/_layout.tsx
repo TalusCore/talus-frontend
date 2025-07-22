@@ -11,7 +11,7 @@ const RootLayout = (): React.JSX.Element => {
     <AuthProvider>
       <SafeAreaProvider>
         <Provider>
-          <Stack initialRouteName="index">
+          <Stack>
             <Stack.Screen
               name="index"
               options={{
@@ -58,6 +58,16 @@ const RootLayout = (): React.JSX.Element => {
               name="qrCodeScanner"
               options={{
                 title: 'QR Code Scanner',
+                headerTintColor: '#fff',
+                headerStyle: {
+                  backgroundColor: '#25292e'
+                }
+              }}
+            />
+            <Stack.Screen
+              name="manageDevices"
+              options={{
+                title: 'Manage Devices',
                 headerTintColor: '#fff',
                 headerStyle: {
                   backgroundColor: '#25292e'

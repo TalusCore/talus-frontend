@@ -1,4 +1,5 @@
-import apiClient, { type ErrorResponse } from './apiClient';
+import type { ErrorResponse } from '@/components/types';
+import apiClient from './apiClient';
 
 type FetchStatsParams = {
   talusId: string;
