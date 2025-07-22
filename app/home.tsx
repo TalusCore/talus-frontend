@@ -1,9 +1,12 @@
 import { fetchStats } from '@/api/statApi';
-import styles from '@/components/styles';
+import StatCard from '@/components/statCard';
+import { BACKGROUND_COLOR } from '@/components/styles';
+import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useContext, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
 
 type Stat = {
   value: number;
@@ -28,6 +31,27 @@ const totalSteps = (steps: number[]): number => {
   return steps.reduce((acc, step) => acc + step, 0);
 };
 
+const totalHealthScore = (avgHeartRate: number, totalSteps: number): number => {
+  if (avgHeartRate === 0) {
+    return Math.round(Math.min(1, totalSteps / 10000) * 100);
+  }
+
+  let heartRateScore;
+
+  if (avgHeartRate <= 100) {
+    heartRateScore = (100 - avgHeartRate) / 50;
+  } else {
+    heartRateScore = (100 - avgHeartRate) / 30;
+  }
+
+  heartRateScore = Math.max(0, Math.min(1, heartRateScore));
+  const stepsScore = Math.min(1, totalSteps / 10000);
+
+  const healthScore = (heartRateScore * 0.5 + stepsScore * 0.5) * 100;
+
+  return Math.round(healthScore);
+};
+
 const newStatData = (name: string, stats?: ResponseStat[]): Stat[] => {
   return (
     stats
@@ -40,7 +64,7 @@ const newStatData = (name: string, stats?: ResponseStat[]): Stat[] => {
 };
 
 const Home = (): React.JSX.Element => {
-  const { talus } = useContext(AuthContext);
+  const { talus, user } = useContext(AuthContext);
   const [heartRate, setHeartRate] = useState<Stat[]>([]);
   const [steps, setSteps] = useState<Stat[]>([]);
   const lastUpdate = useRef<Date | null>(null);
@@ -85,18 +109,43 @@ const Home = (): React.JSX.Element => {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>
-        Welcome to Talus! This is the home page where you can view your stats.
+    <View style={homeStyles.container}>
+      <Text style={homeStyles.welcomeText}>
+        Welcome {capitalizeFirstLetter(user?.firstName, 'User')}!
       </Text>
-      <Text style={styles.text}>
-        Heart Rate: {averageHeartRate(heartRate.map(hr => hr.value))} bpm
-      </Text>
-      <Text style={styles.text}>
-        Steps: {totalSteps(steps.map(step => step.value))}
-      </Text>
+      <StatCard
+        label="Total Health Score"
+        value={totalHealthScore(
+          averageHeartRate(heartRate.map(hr => hr.value)),
+          totalSteps(steps.map(step => step.value))
+        )}
+      />
+      <StatCard
+        label="Average Heart Rate"
+        value={averageHeartRate(heartRate.map(hr => hr.value))}
+      />
+      <StatCard
+        label="Total Steps"
+        value={totalSteps(steps.map(step => step.value))}
+      />
     </View>
   );
 };
+
+const homeStyles = StyleSheet.create({
+  welcomeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 32,
+    color: '#ffffff'
+  },
+  container: {
+    flex: 1,
+    backgroundColor: BACKGROUND_COLOR,
+    paddingTop: 32,
+    alignItems: 'center',
+    justifyContent: 'flex-start'
+  }
+});
 
 export default Home;
