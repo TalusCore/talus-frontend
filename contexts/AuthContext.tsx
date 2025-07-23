@@ -43,9 +43,14 @@ export const AuthProvider = ({
     getMostRecentTalus(userEmail)
       .then(talusResponse => {
         if (talusResponse.success) {
+          if (talusResponse.talusId === undefined) {
+            setTalus(null);
+            return;
+          }
+
           setTalus({
             name: talusResponse.name!,
-            talusId: talusResponse.talusId!
+            talusId: talusResponse.talusId
           });
         } else {
           setTalus(null);
