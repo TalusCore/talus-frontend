@@ -45,10 +45,7 @@ const Login = (): React.JSX.Element => {
         });
         router.replace('/home');
       } else {
-        const errorMsg = capitalizeFirstLetter(
-          loginData.error,
-          'Invalid email or password. Please try again.'
-        );
+        const errorMsg = capitalizeFirstLetter(loginData.error!);
         setErrorMessage(errorMsg);
       }
     }

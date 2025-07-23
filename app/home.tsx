@@ -111,7 +111,7 @@ const Home = (): React.JSX.Element => {
   return (
     <View style={homeStyles.container}>
       <Text style={homeStyles.welcomeText}>
-        Welcome {capitalizeFirstLetter(user?.firstName, 'User')}!
+        Welcome {capitalizeFirstLetter(user?.firstName ?? 'User')}!
       </Text>
       <StatCard
         label="Total Health Score"

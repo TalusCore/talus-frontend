@@ -1,12 +1,11 @@
-export const capitalizeFirstLetter = (
-  str: string | string[] | undefined,
-  defaultStr: string
-): string => {
+export const capitalizeFirstLetter = (str: string | string[]): string => {
   if (Array.isArray(str)) {
-    return capitalizeFirstLetter(str[0], defaultStr);
+    return capitalizeFirstLetter(str[0]);
   }
 
-  if (str === '' || str === undefined) return defaultStr;
-
   return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+export const truncate = (str: string, maxLength: number): string => {
+  return str.length > maxLength ? str.slice(0, maxLength) + '…' : str;
 };

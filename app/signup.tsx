@@ -62,10 +62,7 @@ const SignUp = (): React.JSX.Element => {
         router.dismissAll();
         router.replace('/home');
       } else {
-        const errorMsg = capitalizeFirstLetter(
-          signUpData.error,
-          'Ensure that your sign up data is correct.'
-        );
+        const errorMsg = capitalizeFirstLetter(signUpData.error!);
         setErrorMessage(errorMsg);
       }
     }
