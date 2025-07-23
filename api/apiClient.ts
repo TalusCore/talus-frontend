@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  // Replace with your LAN IP address for mobile testing
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'https://talus-backend.onrender.com/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
