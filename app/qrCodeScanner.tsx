@@ -1,10 +1,11 @@
 import { getTalus, pairTalus } from '@/api/talusApi';
 import styles from '@/components/styles';
+import type { Talus } from '@/components/types';
 import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { router } from 'expo-router';
-import React, { useContext, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useContext, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import validator from 'validator';
@@ -59,7 +60,8 @@ const handleTalusPairing = async (
   email: string,
   id: string,
   setTalusNameError: (error: boolean) => void,
-  setErrorMessage: (message: string) => void
+  setErrorMessage: (message: string) => void,
+  selectTalus: (talus: Talus) => void
 ): Promise<void> => {
   if (talusName.trim() === '') {
     setTalusNameError(true);
@@ -72,26 +74,38 @@ const handleTalusPairing = async (
     });
 
     if (talusInfo.success) {
+      selectTalus({
+        name: talusInfo.talusName ?? talusName,
+        talusId: id
+      });
       router.dismissAll();
       router.replace('/home');
     } else {
-      const errorMsg = capitalizeFirstLetter(
-        talusInfo.error,
-        'Invalid Device Name.'
-      );
+      const errorMsg = capitalizeFirstLetter(talusInfo.error!);
       setErrorMessage(errorMsg);
     }
   }
 };
 
 const QrCodeScanner = (): React.JSX.Element => {
-  const { user } = useContext(AuthContext);
+  const { user, selectTalus } = useContext(AuthContext);
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedId, setScannedId] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean>(true);
   const [talusName, setTalusName] = useState<string>('');
   const [talusNameError, setTalusNameError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  useFocusEffect(
+    useCallback(() => {
+      isFirstScan = true;
+      setScannedId(null);
+      setIsValid(true);
+      setTalusName('');
+      setTalusNameError(false);
+      setErrorMessage('');
+    }, [])
+  );
 
   if (!permission) {
     return (
@@ -176,7 +190,8 @@ const QrCodeScanner = (): React.JSX.Element => {
               user?.email ?? '',
               scannedId,
               setTalusNameError,
-              setErrorMessage
+              setErrorMessage,
+              selectTalus
             )
           }
           style={{ marginTop: 20 }}
