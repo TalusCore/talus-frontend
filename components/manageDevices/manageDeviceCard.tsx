@@ -79,6 +79,7 @@ const ManageDeviceCard = ({
           <View style={manageDeviceStyles.actions}>
             <IconButton
               icon="pencil"
+              iconColor="#ffffff"
               size={20}
               onPress={() => setModalMode('edit')}
             />
