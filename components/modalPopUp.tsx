@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Modal, Portal } from 'react-native-paper';
 
 const ModalPopUp = ({
@@ -17,7 +17,7 @@ const ModalPopUp = ({
         onDismiss={handleClose}
         contentContainerStyle={modalPopUpStyles.modalContainer}
       >
-        {children}
+        <View style={modalPopUpStyles.innerContainer}>{children}</View>
       </Modal>
     </Portal>
   );
@@ -25,10 +25,15 @@ const ModalPopUp = ({
 
 const modalPopUpStyles = StyleSheet.create({
   modalContainer: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  innerContainer: {
     backgroundColor: 'white',
     padding: 20,
+    borderRadius: 8,
     margin: 20,
-    borderRadius: 8
+    maxHeight: '80%'
   }
 });
 
