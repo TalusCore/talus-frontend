@@ -84,7 +84,7 @@ export const renameTalus = async (
 
     return {
       email: response.data.email,
-      talusName: capitalizeFirstLetter(response.data.talusName),
+      talusName: capitalizeFirstLetter(response.data.name),
       success: true
     };
   } catch (error) {

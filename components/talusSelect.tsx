@@ -57,7 +57,7 @@ const TalusSelect = (): React.JSX.Element => {
           <View style={talusSelectStyles.cardContent}>
             <MaterialCommunityIcons name="cellphone" size={20} color="black" />
             <Text style={talusSelectStyles.cardText}>
-              {truncate(selectedDevice, 16)}
+              {truncate(selectedDevice, 12)}
             </Text>
           </View>
         </Card>
