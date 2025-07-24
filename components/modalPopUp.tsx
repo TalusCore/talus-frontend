@@ -15,7 +15,7 @@ const ModalPopUp = ({
       <Modal
         visible={visible}
         onDismiss={handleClose}
-        contentContainerStyle={modalPopUpStyles.modalContainer}
+        contentContainerStyle={modalPopUpStyles.innerContainer}
       >
         {children}
       </Modal>
@@ -24,11 +24,12 @@ const ModalPopUp = ({
 };
 
 const modalPopUpStyles = StyleSheet.create({
-  modalContainer: {
+  innerContainer: {
     backgroundColor: 'white',
     padding: 20,
+    borderRadius: 8,
     margin: 20,
-    borderRadius: 8
+    overflow: 'hidden'
   }
 });
 

@@ -41,9 +41,10 @@ export const pairTalus = async (
 ): Promise<TalusInfo> => {
   try {
     const response = await apiClient.post(`/talus`, talusParams);
+
     return {
       email: response.data.email,
-      talusName: capitalizeFirstLetter(response.data.talusName, 'Talus'),
+      talusName: capitalizeFirstLetter(response.data.talusName),
       success: true
     };
   } catch (error) {
@@ -80,9 +81,10 @@ export const renameTalus = async (
       talusId,
       name: newName
     });
+
     return {
       email: response.data.email,
-      talusName: capitalizeFirstLetter(response.data.talusName, 'Talus'),
+      talusName: capitalizeFirstLetter(response.data.name),
       success: true
     };
   } catch (error) {

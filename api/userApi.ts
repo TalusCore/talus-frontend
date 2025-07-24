@@ -61,8 +61,8 @@ const callUserApi = async (
   try {
     const response = await apiClient.post(`/users/${type}`, body);
     return {
-      firstName: capitalizeFirstLetter(response.data.firstName, 'User'),
-      lastName: capitalizeFirstLetter(response.data.lastName, 'User'),
+      firstName: capitalizeFirstLetter(response.data.firstName),
+      lastName: capitalizeFirstLetter(response.data.lastName),
       email: response.data.email,
       success: true
     };
@@ -81,9 +81,18 @@ export const getMostRecentTalus = async (
     const response = await apiClient.get(`/users/most-recent-talus`, {
       params: { email }
     });
+
+    if (!Boolean(response.data.talusId)) {
+      return {
+        talusId: undefined,
+        name: undefined,
+        success: true
+      };
+    }
+
     return {
       talusId: response.data.talusId,
-      name: capitalizeFirstLetter(response.data.name, 'Talus'),
+      name: capitalizeFirstLetter(response.data.name),
       success: true
     };
   } catch (error) {
@@ -103,7 +112,7 @@ export const getTalusList = async (
     });
     const taluses = response.data.map((talus: TalusResponse) => ({
       talusId: talus.talusId,
-      name: capitalizeFirstLetter(talus.name, 'Talus')
+      name: capitalizeFirstLetter(talus.name!)
     }));
     return {
       taluses,

@@ -4,7 +4,7 @@ import { BACKGROUND_COLOR } from '@/components/styles';
 import type { Talus } from '@/components/types';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
 const ManageDevices = (): React.JSX.Element => {
@@ -24,14 +24,16 @@ const ManageDevices = (): React.JSX.Element => {
           </Text>
         </View>
       ) : (
-        talusOptions.map(talus => (
-          <ManageDeviceCard
-            key={talus.talusId}
-            name={talus.name}
-            talusId={talus.talusId}
-            setTalusOptions={setTalusOptions}
-          />
-        ))
+        <ScrollView>
+          {talusOptions.map(talus => (
+            <ManageDeviceCard
+              key={talus.talusId}
+              name={talus.name}
+              talusId={talus.talusId}
+              setTalusOptions={setTalusOptions}
+            />
+          ))}
+        </ScrollView>
       )}
     </View>
   );

@@ -89,7 +89,8 @@ const modalModeStyles = StyleSheet.create({
   },
   modalText: {
     fontSize: 16,
-    color: '#333333'
+    color: '#333333',
+    marginBottom: 16
   },
   input: {
     marginBottom: 16,

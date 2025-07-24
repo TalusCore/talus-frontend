@@ -1,10 +1,10 @@
 import { signup } from '@/api/userApi';
-import styles from '@/components/styles';
+import styles, { BACKGROUND_COLOR } from '@/components/styles';
 import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { useContext, useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 
 const SignUp = (): React.JSX.Element => {
@@ -62,17 +62,14 @@ const SignUp = (): React.JSX.Element => {
         router.dismissAll();
         router.replace('/home');
       } else {
-        const errorMsg = capitalizeFirstLetter(
-          signUpData.error,
-          'Ensure that your sign up data is correct.'
-        );
+        const errorMsg = capitalizeFirstLetter(signUpData.error!);
         setErrorMessage(errorMsg);
       }
     }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={signUpStyles.container}>
       <Text style={styles.text}>Please sign up to continue.</Text>
       <TextInput
         label="First Name"
@@ -130,5 +127,15 @@ const SignUp = (): React.JSX.Element => {
     </View>
   );
 };
+
+const signUpStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 50,
+    justifyContent: 'flex-start',
+    backgroundColor: BACKGROUND_COLOR
+  }
+});
 
 export default SignUp;
