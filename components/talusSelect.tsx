@@ -4,13 +4,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePathname } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
-import type { LayoutChangeEvent } from 'react-native';
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  type LayoutChangeEvent
 } from 'react-native';
 import { Button, Card } from 'react-native-paper';
 import ModalPopUp from './modalPopUp';
@@ -62,7 +62,6 @@ const TalusSelect = (): React.JSX.Element => {
           </View>
         </Card>
       </TouchableOpacity>
-
       <ModalPopUp visible={visible} handleClose={() => setVisible(false)}>
         <Text style={talusSelectStyles.modalTitle}>Select Device</Text>
         <View
@@ -73,7 +72,11 @@ const TalusSelect = (): React.JSX.Element => {
         >
           {isScrollable ? (
             <>
-              <ScrollView showsVerticalScrollIndicator={true}>
+              <ScrollView
+                onContentSizeChange={(_: number, height: number) =>
+                  setContentHeight(height)
+                }
+              >
                 {talusOptions.map((device, index) => (
                   <Button
                     key={index}
@@ -86,7 +89,6 @@ const TalusSelect = (): React.JSX.Element => {
                   </Button>
                 ))}
               </ScrollView>
-
               <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.2)']}
                 style={{
@@ -117,7 +119,6 @@ const TalusSelect = (): React.JSX.Element => {
             </View>
           )}
         </View>
-
         <Button
           onPress={() => setVisible(false)}
           mode="text"

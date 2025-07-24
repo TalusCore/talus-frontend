@@ -6,6 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { Card, IconButton, Text } from 'react-native-paper';
 import ModalPopUp from '../modalPopUp';
 import type { Talus } from '../types';
+import { truncate } from '../utils';
 import { DeleteMode, EditMode } from './modalModes';
 
 type ManageDeviceCardProps = Talus & {
@@ -75,7 +76,9 @@ const ManageDeviceCard = ({
     <>
       <Card style={manageDeviceStyles.card}>
         <View style={manageDeviceStyles.row}>
-          <Text style={manageDeviceStyles.deviceName}>{name}</Text>
+          <Text style={manageDeviceStyles.deviceName}>
+            {truncate(name, 30)}
+          </Text>
           <View style={manageDeviceStyles.actions}>
             <IconButton
               icon="pencil"
