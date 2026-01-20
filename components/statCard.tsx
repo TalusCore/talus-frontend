@@ -11,7 +11,7 @@ const StatCard = ({
 }): React.JSX.Element => (
   <View style={statCardStyles.card}>
     <Text style={statCardStyles.cardLabel}>{label}</Text>
-    <Text style={statCardStyles.cardValue}>{value}</Text>
+    <Text style={statCardStyles.cardValue}>{Number(value).toFixed(2)}</Text>
   </View>
 );
 

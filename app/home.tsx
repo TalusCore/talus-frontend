@@ -1,11 +1,16 @@
 import { fetchStats } from '@/api/statApi';
 import StatCard from '@/components/statCard';
 import { BACKGROUND_COLOR } from '@/components/styles';
-import { capitalizeFirstLetter } from '@/components/utils';
+import {
+  capitalizeFirstLetter,
+  rollingAverage,
+  sumValues,
+  totalHealthScore
+} from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useContext, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
 type Stat = {
@@ -17,39 +22,6 @@ type ResponseStat = {
   statName: string;
   value: number;
   timestamp: Date;
-};
-
-const averageHeartRate = (heartRates: number[]): number => {
-  if (heartRates.length === 0) return 0;
-
-  const lastFive = heartRates.slice(-5);
-  const sum = lastFive.reduce((acc, rate) => acc + rate, 0);
-  return Math.round(sum / lastFive.length);
-};
-
-const totalSteps = (steps: number[]): number => {
-  return steps.reduce((acc, step) => acc + step, 0);
-};
-
-const totalHealthScore = (avgHeartRate: number, totalSteps: number): number => {
-  if (avgHeartRate === 0) {
-    return Math.round(Math.min(1, totalSteps / 10000) * 100);
-  }
-
-  let heartRateScore;
-
-  if (avgHeartRate <= 100) {
-    heartRateScore = (100 - avgHeartRate) / 50;
-  } else {
-    heartRateScore = (100 - avgHeartRate) / 30;
-  }
-
-  heartRateScore = Math.max(0, Math.min(1, heartRateScore));
-  const stepsScore = Math.min(1, totalSteps / 10000);
-
-  const healthScore = (heartRateScore * 0.5 + stepsScore * 0.5) * 100;
-
-  return Math.round(healthScore);
 };
 
 const newStatData = (name: string, stats?: ResponseStat[]): Stat[] => {
@@ -65,13 +37,21 @@ const newStatData = (name: string, stats?: ResponseStat[]): Stat[] => {
 
 const Home = (): React.JSX.Element => {
   const { talus, user } = useContext(AuthContext);
-  const [heartRate, setHeartRate] = useState<Stat[]>([]);
+  const [temperature, setTemperature] = useState<Stat[]>([]);
+  const [pressure, setPressure] = useState<Stat[]>([]);
+  const [humidity, setHumidity] = useState<Stat[]>([]);
+  const [altitude, setAltitude] = useState<Stat[]>([]);
+  const [bpm, setBpm] = useState<Stat[]>([]);
   const [steps, setSteps] = useState<Stat[]>([]);
   const lastUpdate = useRef<Date | null>(null);
 
   useFocusEffect(
     useCallback(() => {
-      setHeartRate([]);
+      setTemperature([]);
+      setPressure([]);
+      setHumidity([]);
+      setAltitude([]);
+      setBpm([]);
       setSteps([]);
       lastUpdate.current = null;
 
@@ -87,11 +67,23 @@ const Home = (): React.JSX.Element => {
         })
           .then(response => {
             if (response.success) {
-              const heartRateData = newStatData('heart_rate', response.stats);
-              const stepsData = newStatData('steps', response.stats);
+              const temperatureData = newStatData(
+                'temperature',
+                response.stats
+              );
+              const pressureData = newStatData('pressure', response.stats);
+              const humidityData = newStatData('humidity', response.stats);
+              const altitudeData = newStatData('altitude', response.stats);
+              const bpmData = newStatData('bpm', response.stats);
+              const stepData = newStatData('steps', response.stats);
 
-              setHeartRate(prev => [...prev, ...heartRateData]);
-              setSteps(prev => [...prev, ...stepsData]);
+              setTemperature(prev => [...prev, ...temperatureData]);
+              setPressure(prev => [...prev, ...pressureData]);
+              setHumidity(prev => [...prev, ...humidityData]);
+              setAltitude(prev => [...prev, ...altitudeData]);
+              setBpm(prev => [...prev, ...bpmData]);
+              setSteps(prev => [...prev, ...stepData]);
+
               lastUpdate.current = new Date();
             }
           })
@@ -102,7 +94,7 @@ const Home = (): React.JSX.Element => {
 
       fetchData();
 
-      const intervalId = setInterval(fetchData, 1000);
+      const intervalId = setInterval(fetchData, 5000);
 
       return (): void => clearInterval(intervalId);
     }, [talus])
@@ -113,21 +105,76 @@ const Home = (): React.JSX.Element => {
       <Text style={homeStyles.welcomeText}>
         Welcome {capitalizeFirstLetter(user?.firstName ?? 'User')}!
       </Text>
-      <StatCard
-        label="Total Health Score"
-        value={totalHealthScore(
-          averageHeartRate(heartRate.map(hr => hr.value)),
-          totalSteps(steps.map(step => step.value))
-        )}
-      />
-      <StatCard
-        label="Average Heart Rate"
-        value={averageHeartRate(heartRate.map(hr => hr.value))}
-      />
-      <StatCard
-        label="Total Steps"
-        value={totalSteps(steps.map(step => step.value))}
-      />
+      <ScrollView
+        style={{ width: '100%' }}
+        contentContainerStyle={{
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
+        <StatCard
+          label="Total Health Score"
+          value={totalHealthScore(
+            rollingAverage(
+              temperature.map(temp => temp.value),
+              5
+            ),
+            rollingAverage(
+              pressure.map(p => p.value),
+              5
+            ),
+            rollingAverage(
+              humidity.map(h => h.value),
+              5
+            ),
+            rollingAverage(
+              altitude.map(a => a.value),
+              5
+            ),
+            rollingAverage(
+              bpm.map(b => b.value),
+              5
+            ),
+            sumValues(steps.map(s => s.value))
+          )}
+        />
+        <StatCard
+          label="Temperature"
+          value={rollingAverage(
+            temperature.map(t => t.value),
+            5
+          )}
+        />
+        <StatCard
+          label="Pressure"
+          value={rollingAverage(
+            pressure.map(p => p.value),
+            5
+          )}
+        />
+        <StatCard
+          label="Humidity"
+          value={rollingAverage(
+            humidity.map(h => h.value),
+            5
+          )}
+        />
+        <StatCard
+          label="Altitude"
+          value={rollingAverage(
+            altitude.map(a => a.value),
+            5
+          )}
+        />
+        <StatCard
+          label="BPM"
+          value={rollingAverage(
+            bpm.map(b => b.value),
+            5
+          )}
+        />
+        <StatCard label="Steps" value={sumValues(steps.map(s => s.value))} />
+      </ScrollView>
     </View>
   );
 };
