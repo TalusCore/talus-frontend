@@ -12,7 +12,7 @@ import {
   View,
   type LayoutChangeEvent
 } from 'react-native';
-import { Button, Card } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import ModalPopUp from './modalPopUp';
 import type { Talus } from './types';
 import { truncate } from './utils';
@@ -51,16 +51,12 @@ const TalusSelect = (): React.JSX.Element => {
     <>
       <TouchableOpacity
         onPress={() => setVisible(true)}
-        style={{ marginRight: 10 }}
+        style={talusSelectStyles.cardContent}
       >
-        <Card style={talusSelectStyles.card}>
-          <View style={talusSelectStyles.cardContent}>
-            <MaterialCommunityIcons name="cellphone" size={20} color="black" />
-            <Text style={talusSelectStyles.cardText}>
-              {truncate(selectedDevice, 12)}
-            </Text>
-          </View>
-        </Card>
+        <MaterialCommunityIcons name="cellphone" size={30} color="white" />
+        <Text style={talusSelectStyles.cardText}>
+          {truncate(selectedDevice, 7)}
+        </Text>
       </TouchableOpacity>
       <ModalPopUp visible={visible} handleClose={() => setVisible(false)}>
         <Text style={talusSelectStyles.modalTitle}>Select Device</Text>
@@ -83,7 +79,7 @@ const TalusSelect = (): React.JSX.Element => {
                     onPress={() => handleSelect(device)}
                     mode="text"
                   >
-                    <Text style={talusSelectStyles.cardText}>
+                    <Text style={talusSelectStyles.deviceOptionText}>
                       {device.name}
                     </Text>
                   </Button>
@@ -113,7 +109,9 @@ const TalusSelect = (): React.JSX.Element => {
                   onPress={() => handleSelect(device)}
                   mode="text"
                 >
-                  <Text style={talusSelectStyles.cardText}>{device.name}</Text>
+                  <Text style={talusSelectStyles.deviceOptionText}>
+                    {device.name}
+                  </Text>
                 </Button>
               ))}
             </View>
@@ -124,7 +122,7 @@ const TalusSelect = (): React.JSX.Element => {
           mode="text"
           style={{ marginTop: 10 }}
         >
-          <Text style={talusSelectStyles.cardText}>Cancel</Text>
+          <Text style={talusSelectStyles.deviceOptionText}>Cancel</Text>
         </Button>
       </ModalPopUp>
     </>
@@ -140,9 +138,16 @@ const talusSelectStyles = StyleSheet.create({
   },
   cardContent: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingLeft: 10
   },
   cardText: {
+    fontSize: 16,
+    color: 'white',
+    textAlign: 'center',
+    marginLeft: 5
+  },
+  deviceOptionText: {
     fontSize: 16,
     color: 'black',
     textAlign: 'center'
