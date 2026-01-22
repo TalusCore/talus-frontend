@@ -45,3 +45,54 @@ export const fetchStats = async (
     };
   }
 };
+
+export const fetchStatNames = async (talusId: string): Promise<string[]> => {
+  try {
+    const response = await apiClient.get('/stat/names', {
+      params: { talusId }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Error fetching stat names:',
+      (error as ErrorResponse).response.data.message ?? String(error)
+    );
+    return [];
+  }
+};
+
+export const fetchStatsByNameRange = async (
+  talusId: string,
+  statName: string,
+  startDate: Date,
+  endDate: Date
+): Promise<StatResponse[]> => {
+  try {
+    console.log('Fetching stats for:', {
+      talusId,
+      statName,
+      startDate,
+      endDate
+    });
+
+    const response = await apiClient.get('/stat/stat-by-name', {
+      params: {
+        talusId,
+        statName,
+        startTime: startDate,
+        endTime: endDate
+      }
+    });
+    return response.data.map((stat: StatResponse) => ({
+      statName: stat.statName,
+      value: stat.value,
+      timestamp: new Date(stat.timestamp)
+    }));
+  } catch (error) {
+    console.error(
+      'Error fetching stats by name and range:',
+      (error as ErrorResponse).response.data.message ?? String(error)
+    );
+    return [];
+  }
+};

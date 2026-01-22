@@ -74,6 +74,16 @@ const RootLayout = (): React.JSX.Element => {
                 }
               }}
             />
+            <Stack.Screen
+              name="activityHistory"
+              options={{
+                title: 'Activity History',
+                headerTintColor: '#fff',
+                headerStyle: {
+                  backgroundColor: '#25292e'
+                }
+              }}
+            />
           </Stack>
         </Provider>
       </SafeAreaProvider>
