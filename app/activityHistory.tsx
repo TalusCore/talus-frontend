@@ -1,5 +1,6 @@
 import { fetchStatNames, fetchStatsByNameRange } from '@/api/statApi';
 import { BACKGROUND_COLOR } from '@/components/styles';
+import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import DateTimePicker, {
   type DateTimePickerEvent
@@ -17,7 +18,7 @@ import { Provider, Text } from 'react-native-paper';
 const ActivityHistory = (): React.JSX.Element => {
   const { talus } = useContext(AuthContext);
 
-  const [stats, setStats] = useState<string[]>([]);
+  const [stats, setStats] = useState<{ label: string; value: string }[]>([]);
   const [value, setValue] = useState<string>('');
   const [labels, setLabels] = useState<string[]>([]);
   const [data, setData] = useState<ChartData>({
@@ -29,18 +30,38 @@ const ActivityHistory = (): React.JSX.Element => {
   const [endDate, setEndDate] = useState(new Date());
 
   const [tooltip, setTooltip] = useState<{
+    index: number;
     visible: boolean;
     x: number;
     y: number;
     value: number;
     label: string;
   }>({
+    index: -1,
     visible: false,
     x: 0,
     y: 0,
     value: 0,
     label: ''
   });
+
+  enum StatNamesEnum {
+    Accel_x = 'X Acceleration',
+    Accel_y = 'Y Acceleration',
+    Accel_z = 'Z Acceleration',
+    Altitude = 'Altitude',
+    Bpm = 'Heart Rate (BPM)',
+    Gyro_x = 'X Gyroscope',
+    Gyro_y = 'Y Gyroscope',
+    Gyro_z = 'Z Gyroscope',
+    Humidity = 'Humidity',
+    Latitude = 'Latitude',
+    Longitude = 'Longitude',
+    Pressure = 'Pressure',
+    Satellites = 'Satellites',
+    Steps = 'Step Count',
+    Temperature = 'Temperature'
+  }
 
   const fetchStatList = (): void => {
     if (!talus) {
@@ -49,7 +70,15 @@ const ActivityHistory = (): React.JSX.Element => {
 
     fetchStatNames(talus.talusId).then(statNames => {
       const orderedStatNames = statNames.sort((a, b) => a.localeCompare(b));
-      setStats(orderedStatNames);
+      setStats(
+        orderedStatNames.map(name => ({
+          label:
+            StatNamesEnum[
+              capitalizeFirstLetter(name) as keyof typeof StatNamesEnum
+            ] ?? capitalizeFirstLetter(name),
+          value: name
+        }))
+      );
     });
   };
 
@@ -193,7 +222,13 @@ const ActivityHistory = (): React.JSX.Element => {
     y: number;
     getColor: (opacity: number) => string;
   }): void => {
+    if (dataPoint.index === tooltip.index && tooltip.visible) {
+      setTooltip(prev => ({ ...prev, visible: false }));
+      return;
+    }
+
     setTooltip({
+      index: dataPoint.index,
       visible: true,
       x: dataPoint.x,
       y: dataPoint.y,
@@ -214,7 +249,10 @@ const ActivityHistory = (): React.JSX.Element => {
             style={dropdownStyles.dropdown}
             placeholderStyle={dropdownStyles.fontStyle}
             selectedTextStyle={dropdownStyles.fontStyle}
-            data={stats?.map(stat => ({ label: stat, value: stat })) ?? []}
+            data={
+              stats?.map(stat => ({ label: stat.label, value: stat.value })) ??
+              []
+            }
             labelField="label"
             valueField="value"
             placeholder="Select stat"
