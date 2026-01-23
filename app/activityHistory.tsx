@@ -15,6 +15,15 @@ import type {
 import { Dropdown } from 'react-native-element-dropdown';
 import { Provider, Text } from 'react-native-paper';
 
+type TooltipState = {
+  index: number;
+  visible: boolean;
+  x: number;
+  y: number;
+  value: number;
+  label: string;
+};
+
 const ActivityHistory = (): React.JSX.Element => {
   const { talus } = useContext(AuthContext);
 
@@ -29,14 +38,7 @@ const ActivityHistory = (): React.JSX.Element => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const [tooltip, setTooltip] = useState<{
-    index: number;
-    visible: boolean;
-    x: number;
-    y: number;
-    value: number;
-    label: string;
-  }>({
+  const [tooltip, setTooltip] = useState<TooltipState>({
     index: -1,
     visible: false,
     x: 0,
@@ -80,6 +82,15 @@ const ActivityHistory = (): React.JSX.Element => {
         }))
       );
     });
+  };
+
+  const formatDate = (timestamp: Date): string => {
+    const hours = timestamp.getHours().toString().padStart(2, '0');
+    const minutes = timestamp.getMinutes().toString().padStart(2, '0');
+
+    return `${timestamp.getDate()}/${
+      timestamp.getMonth() + 1
+    }/${timestamp.getFullYear()} ${hours}:${minutes}`;
   };
 
   const fetchStats = (
@@ -135,13 +146,7 @@ const ActivityHistory = (): React.JSX.Element => {
         );
 
         const labels = orderedResponse.map(entry => {
-          const date = new Date(entry.timestamp);
-          const hours = date.getHours().toString().padStart(2, '0');
-          const minutes = date.getMinutes().toString().padStart(2, '0');
-
-          return `${date.getDate()}/${
-            date.getMonth() + 1
-          }/${date.getFullYear()} ${hours}:${minutes}`;
+          return formatDate(entry.timestamp);
         });
         setLabels(labels);
 
@@ -161,7 +166,7 @@ const ActivityHistory = (): React.JSX.Element => {
           ]
         };
 
-        setTooltip(prev => ({ ...prev, visible: false }));
+        setTooltip(prev => ({ ...prev, visible: false, index: -1 }));
         setData(chartData);
       }
     );
@@ -223,18 +228,17 @@ const ActivityHistory = (): React.JSX.Element => {
     getColor: (opacity: number) => string;
   }): void => {
     if (dataPoint.index === tooltip.index && tooltip.visible) {
-      setTooltip(prev => ({ ...prev, visible: false }));
-      return;
+      setTooltip(prev => ({ ...prev, visible: false, index: -1 }));
+    } else {
+      setTooltip({
+        index: dataPoint.index,
+        visible: true,
+        x: dataPoint.x,
+        y: dataPoint.y,
+        value: dataPoint.value,
+        label: labels[dataPoint.index]
+      });
     }
-
-    setTooltip({
-      index: dataPoint.index,
-      visible: true,
-      x: dataPoint.x,
-      y: dataPoint.y,
-      value: dataPoint.value,
-      label: labels[dataPoint.index]
-    });
   };
 
   useEffect(() => {
@@ -249,10 +253,7 @@ const ActivityHistory = (): React.JSX.Element => {
             style={dropdownStyles.dropdown}
             placeholderStyle={dropdownStyles.fontStyle}
             selectedTextStyle={dropdownStyles.fontStyle}
-            data={
-              stats?.map(stat => ({ label: stat.label, value: stat.value })) ??
-              []
-            }
+            data={stats.map(stat => ({ label: stat.label, value: stat.value }))}
             labelField="label"
             valueField="value"
             placeholder="Select stat"
@@ -283,16 +284,7 @@ const ActivityHistory = (): React.JSX.Element => {
         </View>
 
         {labels.length > 0 ? (
-          <View
-            style={{
-              backgroundColor: 'white',
-              paddingTop: 12,
-              paddingRight: 12,
-              marginHorizontal: 16,
-              borderRadius: 8,
-              alignItems: 'center'
-            }}
-          >
+          <View style={chartStyles.lineChart}>
             <LineChart
               data={data}
               bezier
@@ -312,26 +304,20 @@ const ActivityHistory = (): React.JSX.Element => {
             {tooltip.visible && (
               <View
                 style={{
-                  position: 'absolute',
+                  ...chartStyles.tooltip,
                   left: tooltip.x - 20,
-                  top: tooltip.y - 35,
-                  backgroundColor: '#000',
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 6
+                  top: tooltip.y - 35
                 }}
               >
-                <Text style={{ color: '#fff', fontSize: 12 }}>
-                  {tooltip.label}
-                </Text>
-                <Text style={{ color: '#fff', fontSize: 12 }}>
+                <Text style={chartStyles.tooltipText}>{tooltip.label}</Text>
+                <Text style={chartStyles.tooltipText}>
                   {tooltip.value.toFixed(2)}
                 </Text>
               </View>
             )}
           </View>
         ) : (
-          <Text style={{ textAlign: 'center', color: 'white', fontSize: 20 }}>
+          <Text style={activityHistoryStyles.errorMessageText}>
             {errorMessage()}
           </Text>
         )}
@@ -359,7 +345,27 @@ const activityHistoryStyles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 4,
     textAlign: 'center'
-  }
+  },
+  errorMessageText: { textAlign: 'center', color: 'white', fontSize: 20 }
+});
+
+const chartStyles = StyleSheet.create({
+  lineChart: {
+    backgroundColor: 'white',
+    paddingTop: 12,
+    paddingRight: 12,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  tooltip: {
+    position: 'absolute',
+    backgroundColor: '#000',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6
+  },
+  tooltipText: { color: '#fff', fontSize: 12 }
 });
 
 const dropdownStyles = StyleSheet.create({
