@@ -48,7 +48,8 @@ const ActivityHistory = (): React.JSX.Element => {
     }
 
     fetchStatNames(talus.talusId).then(statNames => {
-      setStats(statNames);
+      const orderedStatNames = statNames.sort((a, b) => a.localeCompare(b));
+      setStats(orderedStatNames);
     });
   };
 
@@ -69,21 +70,55 @@ const ActivityHistory = (): React.JSX.Element => {
 
     fetchStatsByNameRange(talus.talusId, statName, startOfDay, endOfDay).then(
       response => {
-        const orderedResponse = response.sort((a, b) =>
+        const updatedResponse = [];
+
+        if (statName === 'steps') {
+          const aggregatedResponse: { timestamp: Date; value: number }[] = [];
+
+          response.forEach(entry => {
+            const dateKey = new Date(
+              entry.timestamp.getFullYear(),
+              entry.timestamp.getMonth(),
+              entry.timestamp.getDate()
+            );
+
+            const existingIndex = aggregatedResponse.findIndex(
+              e => e.timestamp.getTime() === dateKey.getTime()
+            );
+
+            if (existingIndex !== -1) {
+              aggregatedResponse[existingIndex].value += entry.value;
+            } else {
+              aggregatedResponse.push({
+                timestamp: dateKey,
+                value: entry.value
+              });
+            }
+          });
+
+          updatedResponse.push(...aggregatedResponse);
+        } else {
+          updatedResponse.push(...response);
+        }
+
+        const orderedResponse = updatedResponse.sort((a, b) =>
           a.timestamp > b.timestamp ? 1 : -1
         );
 
         const labels = orderedResponse.map(entry => {
           const date = new Date(entry.timestamp);
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+
           return `${date.getDate()}/${
             date.getMonth() + 1
-          }/${date.getFullYear()}`;
+          }/${date.getFullYear()} ${hours}:${minutes}`;
         });
         setLabels(labels);
 
         const chartLabels = labels.map((label, index) => {
           if (index === 0 || index === labels.length - 1) {
-            return label;
+            return label.split(' ')[0];
           }
           return '';
         });
@@ -241,7 +276,7 @@ const ActivityHistory = (): React.JSX.Element => {
                 style={{
                   position: 'absolute',
                   left: tooltip.x - 20,
-                  top: tooltip.y - 20,
+                  top: tooltip.y - 35,
                   backgroundColor: '#000',
                   paddingHorizontal: 8,
                   paddingVertical: 4,
@@ -249,7 +284,10 @@ const ActivityHistory = (): React.JSX.Element => {
                 }}
               >
                 <Text style={{ color: '#fff', fontSize: 12 }}>
-                  {tooltip.label}: {tooltip.value.toFixed(2)}
+                  {tooltip.label}
+                </Text>
+                <Text style={{ color: '#fff', fontSize: 12 }}>
+                  {tooltip.value.toFixed(2)}
                 </Text>
               </View>
             )}
