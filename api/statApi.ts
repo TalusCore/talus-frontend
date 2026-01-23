@@ -68,13 +68,6 @@ export const fetchStatsByNameRange = async (
   endDate: Date
 ): Promise<StatResponse[]> => {
   try {
-    console.log('Fetching stats for:', {
-      talusId,
-      statName,
-      startDate,
-      endDate
-    });
-
     const response = await apiClient.get('/stat/stat-by-name', {
       params: {
         talusId,
