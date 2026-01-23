@@ -1,12 +1,21 @@
 import { fetchStatNames, fetchStatsByNameRange } from '@/api/statApi';
-import { BACKGROUND_COLOR } from '@/components/styles';
+import {
+  activityHistoryStyles,
+  chartStyles,
+  dropdownStyles
+} from '@/components/activityHistory/styles';
+import {
+  StatNamesEnum,
+  type TooltipState
+} from '@/components/activityHistory/types';
+import { errorMessage, formatDate } from '@/components/activityHistory/utils';
 import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import DateTimePicker, {
   type DateTimePickerEvent
 } from '@react-native-community/datetimepicker';
 import { useContext, useEffect, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { Dimensions, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import type {
   ChartData,
@@ -14,15 +23,6 @@ import type {
 } from 'react-native-chart-kit/dist/HelperTypes';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Provider, Text } from 'react-native-paper';
-
-type TooltipState = {
-  index: number;
-  visible: boolean;
-  x: number;
-  y: number;
-  value: number;
-  label: string;
-};
 
 const ActivityHistory = (): React.JSX.Element => {
   const { talus } = useContext(AuthContext);
@@ -47,24 +47,6 @@ const ActivityHistory = (): React.JSX.Element => {
     label: ''
   });
 
-  enum StatNamesEnum {
-    Accel_x = 'X Acceleration',
-    Accel_y = 'Y Acceleration',
-    Accel_z = 'Z Acceleration',
-    Altitude = 'Altitude',
-    Bpm = 'Heart Rate (BPM)',
-    Gyro_x = 'X Gyroscope',
-    Gyro_y = 'Y Gyroscope',
-    Gyro_z = 'Z Gyroscope',
-    Humidity = 'Humidity',
-    Latitude = 'Latitude',
-    Longitude = 'Longitude',
-    Pressure = 'Pressure',
-    Satellites = 'Satellites',
-    Steps = 'Step Count',
-    Temperature = 'Temperature'
-  }
-
   const fetchStatList = (): void => {
     if (!talus) {
       return;
@@ -82,15 +64,6 @@ const ActivityHistory = (): React.JSX.Element => {
         }))
       );
     });
-  };
-
-  const formatDate = (timestamp: Date): string => {
-    const hours = timestamp.getHours().toString().padStart(2, '0');
-    const minutes = timestamp.getMinutes().toString().padStart(2, '0');
-
-    return `${timestamp.getDate()}/${
-      timestamp.getMonth() + 1
-    }/${timestamp.getFullYear()} ${hours}:${minutes}`;
   };
 
   const fetchStats = (
@@ -197,18 +170,6 @@ const ActivityHistory = (): React.JSX.Element => {
     if (value !== '') {
       fetchStats(value, startDate, selectedDate);
     }
-  };
-
-  const errorMessage = (): string => {
-    if (!value || value === '') {
-      return 'Please select a stat.';
-    }
-
-    if (startDate > endDate) {
-      return 'Start date must be before end date.';
-    }
-
-    return 'No data available for the selected date range.';
   };
 
   const setStatValue = (selectedStat: {
@@ -318,73 +279,12 @@ const ActivityHistory = (): React.JSX.Element => {
           </View>
         ) : (
           <Text style={activityHistoryStyles.errorMessageText}>
-            {errorMessage()}
+            {errorMessage(value, startDate, endDate)}
           </Text>
         )}
       </View>
     </Provider>
   );
 };
-
-const activityHistoryStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BACKGROUND_COLOR
-  },
-  dropdown: {
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 20
-  },
-  dateTimePickerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginBottom: 24
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 4,
-    textAlign: 'center'
-  },
-  errorMessageText: { textAlign: 'center', color: 'white', fontSize: 20 }
-});
-
-const chartStyles = StyleSheet.create({
-  lineChart: {
-    backgroundColor: 'white',
-    paddingTop: 12,
-    paddingRight: 12,
-    marginHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center'
-  },
-  tooltip: {
-    position: 'absolute',
-    backgroundColor: '#000',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6
-  },
-  tooltipText: { color: '#fff', fontSize: 12 }
-});
-
-const dropdownStyles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    padding: 16
-  },
-  dropdown: {
-    height: 50,
-    width: '90%',
-    backgroundColor: 'white',
-    borderColor: 'white',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8
-  },
-  fontStyle: {
-    fontSize: 16
-  }
-});
 
 export default ActivityHistory;
