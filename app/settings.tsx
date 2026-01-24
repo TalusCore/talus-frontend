@@ -38,6 +38,16 @@ const Settings = (): React.JSX.Element => {
       </Button>
       <Button
         mode="contained"
+        icon="chart-line"
+        onPress={() => {
+          router.push('/activityHistory');
+        }}
+        style={{ marginBottom: 20 }}
+      >
+        View Activity History
+      </Button>
+      <Button
+        mode="contained"
         icon="logout"
         onPress={handleSignOut}
         style={{ marginBottom: 20 }}
