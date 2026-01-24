@@ -114,8 +114,8 @@ const ActivityHistory = (): React.JSX.Element => {
           updatedResponse.push(...response);
         }
 
-        const orderedResponse = updatedResponse.sort((a, b) =>
-          a.timestamp > b.timestamp ? 1 : -1
+        const orderedResponse = updatedResponse.sort(
+          (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
         );
 
         const labels = orderedResponse.map(entry => {
