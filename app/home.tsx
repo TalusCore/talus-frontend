@@ -67,14 +67,16 @@ const Home = (): React.JSX.Element => {
           });
 
           if (response.success) {
-            rollingAverageStats.forEach(({ name, setter }) => {
-              const statData = newStatData(name, response.stats);
-              setter(prev => MostRecentValues([...prev, ...statData]));
-            });
+            if (response.stats && response.stats.length > 0) {
+              rollingAverageStats.forEach(({ name, setter }) => {
+                const statData = newStatData(name, response.stats);
+                setter(prev => MostRecentValues([...prev, ...statData]));
+              });
 
-            const stepData = newStatData('steps', response.stats);
-            const totalSteps = sumValues(stepData.map(s => s.value));
-            setSteps(prev => prev + totalSteps);
+              const stepData = newStatData('steps', response.stats);
+              const totalSteps = sumValues(stepData.map(s => s.value));
+              setSteps(prev => prev + totalSteps);
+            }
 
             lastUpdate.current = new Date();
           }
