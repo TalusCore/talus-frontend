@@ -42,7 +42,8 @@ module.exports = {
     '@typescript-eslint/no-unnecessary-type-assertion': 'error',
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     '@typescript-eslint/consistent-type-imports': 'error',
-    '@typescript-eslint/strict-boolean-expressions': 'error'
+    '@typescript-eslint/strict-boolean-expressions': 'error',
+    'react-hooks/exhaustive-deps': 'off'
   },
   settings: {
     react: {

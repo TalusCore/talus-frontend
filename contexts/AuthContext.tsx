@@ -11,6 +11,7 @@ type AuthContextType = {
   signOut: () => void;
   setMostRecentTalus: () => void;
   selectTalus: (talusDetails: Talus | null) => void;
+  updateUser: (userDetails: User) => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -19,7 +20,8 @@ export const AuthContext = createContext<AuthContextType>({
   signIn: async () => {},
   signOut: () => {},
   setMostRecentTalus: () => {},
-  selectTalus: () => {}
+  selectTalus: () => {},
+  updateUser: () => {}
 });
 
 type AuthProviderProps = {
@@ -67,6 +69,10 @@ export const AuthProvider = ({
     firstName: string;
     lastName: string;
     email: string;
+    gender: string;
+    birthday: Date;
+    height: number;
+    weight: number;
   }): Promise<void> => {
     setUser(userDetails);
     setMostRecentTalus(userDetails.email);
@@ -81,9 +87,21 @@ export const AuthProvider = ({
     setTalus(talusDetails);
   };
 
+  const updateUser = (userDetails: User): void => {
+    setUser(userDetails);
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, talus, signIn, signOut, setMostRecentTalus, selectTalus }}
+      value={{
+        user,
+        talus,
+        signIn,
+        signOut,
+        setMostRecentTalus,
+        selectTalus,
+        updateUser
+      }}
     >
       {children}
     </AuthContext.Provider>

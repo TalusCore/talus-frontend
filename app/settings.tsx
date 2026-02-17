@@ -18,6 +18,16 @@ const Settings = (): React.JSX.Element => {
     <View style={styles.settings}>
       <Button
         mode="contained"
+        icon="account-cog"
+        onPress={() => {
+          router.push('/editProfile');
+        }}
+        style={{ marginBottom: 20 }}
+      >
+        Edit Profile
+      </Button>
+      <Button
+        mode="contained"
         icon="camera"
         onPress={() => {
           router.push('/qrCodeScanner');
@@ -35,6 +45,16 @@ const Settings = (): React.JSX.Element => {
         style={{ marginBottom: 20 }}
       >
         Manage Paired Devices
+      </Button>
+      <Button
+        mode="contained"
+        icon="chart-line"
+        onPress={() => {
+          router.push('/activityHistory');
+        }}
+        style={{ marginBottom: 20 }}
+      >
+        View Activity History
       </Button>
       <Button
         mode="contained"
