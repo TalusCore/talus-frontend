@@ -6,6 +6,10 @@ type UserResponse = {
   firstName?: string;
   lastName?: string;
   email?: string;
+  gender?: string;
+  birthday?: Date;
+  height?: number;
+  weight?: number;
   success: boolean;
   error?: string;
 };
@@ -37,13 +41,21 @@ export const signup = async (
   firstName: string,
   lastName: string,
   email: string,
-  password: string
+  password: string,
+  gender: string,
+  birthday: Date,
+  height: number,
+  weight: number
 ): Promise<UserResponse> => {
   const body = {
     firstName,
     lastName,
     email,
-    password
+    password,
+    gender,
+    birthday,
+    height,
+    weight
   };
 
   return callUserApi('signup', body);
@@ -56,6 +68,10 @@ const callUserApi = async (
     lastName?: string;
     email: string;
     password: string;
+    gender?: string;
+    birthday?: Date;
+    height?: number;
+    weight?: number;
   }
 ): Promise<UserResponse> => {
   try {
@@ -64,12 +80,56 @@ const callUserApi = async (
       firstName: capitalizeFirstLetter(response.data.firstName),
       lastName: capitalizeFirstLetter(response.data.lastName),
       email: response.data.email,
+      gender: response.data.gender,
+      birthday: response.data.birthday,
+      height: response.data.height,
+      weight: response.data.weight,
       success: true
     };
   } catch (error) {
     return {
       success: false,
-      error: (error as ErrorResponse).response.data.message ?? String(error)
+      error: (error as ErrorResponse).response?.data?.message ?? String(error)
+    };
+  }
+};
+
+export const editUser = async (
+  firstName: string,
+  lastName: string,
+  email: string,
+  gender: string,
+  birthday: Date,
+  height: number,
+  weight: number
+): Promise<UserResponse> => {
+  const body = {
+    firstName,
+    lastName,
+    email,
+    gender,
+    birthday,
+    height,
+    weight
+  };
+
+  try {
+    const response = await apiClient.put(`/users/edit`, body);
+
+    return {
+      firstName: capitalizeFirstLetter(response.data.firstName),
+      lastName: capitalizeFirstLetter(response.data.lastName),
+      email: response.data.email,
+      gender: response.data.gender,
+      birthday: response.data.birthday,
+      height: response.data.height,
+      weight: response.data.weight,
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as ErrorResponse).response?.data?.message ?? String(error)
     };
   }
 };
@@ -98,7 +158,7 @@ export const getMostRecentTalus = async (
   } catch (error) {
     return {
       success: false,
-      error: (error as ErrorResponse).response.data.message ?? String(error)
+      error: (error as ErrorResponse).response?.data?.message ?? String(error)
     };
   }
 };
@@ -121,7 +181,7 @@ export const getTalusList = async (
   } catch (error) {
     return {
       success: false,
-      error: (error as ErrorResponse).response.data.message ?? String(error)
+      error: (error as ErrorResponse).response?.data?.message ?? String(error)
     };
   }
 };
