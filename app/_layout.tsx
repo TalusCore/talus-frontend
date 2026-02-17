@@ -84,6 +84,16 @@ const RootLayout = (): React.JSX.Element => {
                 }
               }}
             />
+            <Stack.Screen
+              name="editProfile"
+              options={{
+                title: 'Edit Profile',
+                headerTintColor: '#fff',
+                headerStyle: {
+                  backgroundColor: '#25292e'
+                }
+              }}
+            />
           </Stack>
         </Provider>
       </SafeAreaProvider>

@@ -1,4 +1,4 @@
-import { signup } from '@/api/userApi';
+import { editUser } from '@/api/userApi';
 import styles, { BACKGROUND_COLOR } from '@/components/styles';
 import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
@@ -11,20 +11,18 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Button, TextInput } from 'react-native-paper';
 
-const SignUp = (): React.JSX.Element => {
-  const { signIn } = useContext(AuthContext);
-  const [firstName, setFirstName] = useState('');
-  const [email, setEmail] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [password, setPassword] = useState('');
-  const [gender, setGender] = useState('');
-  const [birthday, setBirthday] = useState(new Date());
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
+const EditProfile = (): React.JSX.Element => {
+  const { user, updateUser } = useContext(AuthContext);
+  const [firstName, setFirstName] = useState(user?.firstName ?? '');
+  const [lastName, setLastName] = useState(user?.lastName ?? '');
+  const [gender, setGender] = useState(user?.gender ?? '');
+  const [birthday, setBirthday] = useState(
+    new Date(user?.birthday ?? new Date())
+  );
+  const [height, setHeight] = useState(user?.height.toString() ?? '');
+  const [weight, setWeight] = useState(user?.weight.toString() ?? '');
   const [firstNameError, setFirstNameError] = useState(false);
   const [lastNameError, setLastNameError] = useState(false);
-  const [emailError, setEmailError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
   const [genderError, setGenderError] = useState(false);
   const [birthdayError, setBirthdayError] = useState(false);
   const [heightError, setHeightError] = useState(false);
@@ -44,7 +42,7 @@ const SignUp = (): React.JSX.Element => {
     const pickedDate = new Date(selectedDate);
     pickedDate.setHours(0, 0, 0, 0);
 
-    setBirthdayError(pickedDate > today);
+    setBirthdayError(pickedDate >= today);
     setBirthday(pickedDate);
   };
 
@@ -58,7 +56,7 @@ const SignUp = (): React.JSX.Element => {
     setWeight(numericText);
   };
 
-  const handleSignUp = async (): Promise<void> => {
+  const handleEdit = async (): Promise<void> => {
     let hasError = false;
 
     if (!firstName.trim()) {
@@ -73,20 +71,6 @@ const SignUp = (): React.JSX.Element => {
       hasError = true;
     } else {
       setLastNameError(false);
-    }
-
-    if (!email.trim()) {
-      setEmailError(true);
-      hasError = true;
-    } else {
-      setEmailError(false);
-    }
-
-    if (!password.trim()) {
-      setPasswordError(true);
-      hasError = true;
-    } else {
-      setPasswordError(false);
     }
 
     if (!gender.trim()) {
@@ -122,40 +106,39 @@ const SignUp = (): React.JSX.Element => {
       setWeightError(false);
     }
 
-    if (!hasError) {
-      const signUpData = await signup(
+    if (!hasError && user?.email != null) {
+      const editData = await editUser(
         firstName,
         lastName,
-        email,
-        password,
+        user.email,
         gender,
         birthday,
         Number(height),
         Number(weight)
       );
 
-      if (signUpData.success) {
-        signIn({
-          firstName: signUpData.firstName!,
-          lastName: signUpData.lastName!,
-          email: signUpData.email!,
-          gender: signUpData.gender!,
-          birthday: signUpData.birthday!,
-          height: signUpData.height!,
-          weight: signUpData.weight!
+      if (editData.success) {
+        updateUser({
+          firstName: editData.firstName!,
+          lastName: editData.lastName!,
+          email: editData.email!,
+          gender: editData.gender!,
+          birthday: editData.birthday!,
+          height: editData.height!,
+          weight: editData.weight!
         });
         router.dismissAll();
         router.replace('/home');
       } else {
-        const errorMsg = capitalizeFirstLetter(signUpData.error!);
+        const errorMsg = capitalizeFirstLetter(editData.error!);
         setErrorMessage(errorMsg);
       }
     }
   };
 
   return (
-    <View style={signUpStyles.container}>
-      <Text style={styles.text}>Please sign up to continue.</Text>
+    <View style={editStyles.container}>
+      <Text style={styles.text}>Edit your profile and save changes.</Text>
       <View style={{ width: '100%', marginTop: 10, height: '75%' }}>
         <ScrollView
           automaticallyAdjustKeyboardInsets={true}
@@ -185,28 +168,6 @@ const SignUp = (): React.JSX.Element => {
             value={lastName}
             onChangeText={setLastName}
             error={lastNameError}
-          />
-          <TextInput
-            label="Email"
-            mode="flat"
-            style={styles.textInput}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            error={emailError}
-          />
-          <TextInput
-            label="Password"
-            mode="flat"
-            style={styles.textInput}
-            secureTextEntry
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            error={passwordError}
           />
           <View
             style={{
@@ -313,16 +274,16 @@ const SignUp = (): React.JSX.Element => {
       <Button
         mode="contained"
         icon="account-plus"
-        onPress={handleSignUp}
+        onPress={handleEdit}
         style={{ marginTop: 20 }}
       >
-        Sign Up
+        Save Changes
       </Button>
     </View>
   );
 };
 
-const signUpStyles = StyleSheet.create({
+const editStyles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -332,4 +293,4 @@ const signUpStyles = StyleSheet.create({
   }
 });
 
-export default SignUp;
+export default EditProfile;

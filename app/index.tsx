@@ -41,7 +41,11 @@ const Login = (): React.JSX.Element => {
         signIn({
           firstName: loginData.firstName!,
           lastName: loginData.lastName!,
-          email: loginData.email!
+          email: loginData.email!,
+          gender: loginData.gender!,
+          birthday: loginData.birthday!,
+          height: loginData.height!,
+          weight: loginData.weight!
         });
         router.replace('/home');
       } else {

@@ -23,7 +23,18 @@ const styles = StyleSheet.create({
     width: '80%',
     marginTop: 20
   },
-  error: { color: 'red', marginTop: 20 }
+  error: { color: 'red', marginTop: 20 },
+  inputError: {
+    borderColor: 'red',
+    borderWidth: 1
+  },
+  datePicker: {
+    width: '100%',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingRight: 4
+  }
 });
 
 export default styles;
