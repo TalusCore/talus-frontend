@@ -33,7 +33,6 @@ const Home = (): React.JSX.Element => {
   const [mlInsightIndex, setMlInsightIndex] = useState<number>(0);
   const [mlInsights, setMlInsights] = useState<string[]>([]);
   const lastUpdate = useRef<Date | null>(null);
-  const hasFetchedInsights = useRef(false);
   const mlInsightsRef = useRef<string[]>([]);
 
   const temperatureAvg = useMemo(() => averageStat(temperature), [temperature]);
@@ -55,7 +54,6 @@ const Home = (): React.JSX.Element => {
         setMlInsightIndex(0);
         mlInsightsRef.current = [];
         lastUpdate.current = null;
-        hasFetchedInsights.current = false;
       };
 
       resetState();
@@ -107,8 +105,7 @@ const Home = (): React.JSX.Element => {
               const totalSteps = sumValues(stepData.map(s => s.value));
               setSteps(prev => prev + totalSteps);
 
-              if (!hasFetchedInsights.current && user) {
-                hasFetchedInsights.current = true;
+              if (mlInsightsRef.current.length === 0 && user) {
                 const age = getAge(user.birthday);
                 const fitnessLevel = totalHealthScore(
                   averageStat(updatedStats.temperature),
