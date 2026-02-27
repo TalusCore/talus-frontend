@@ -41,7 +41,7 @@ export const fetchStats = async (
   } catch (error) {
     return {
       success: false,
-      error: (error as ErrorResponse).response.data.message ?? String(error)
+      error: (error as ErrorResponse).response?.data?.message ?? String(error)
     };
   }
 };
@@ -55,7 +55,7 @@ export const fetchStatNames = async (talusId: string): Promise<string[]> => {
   } catch (error) {
     console.error(
       'Error fetching stat names:',
-      (error as ErrorResponse).response.data.message ?? String(error)
+      (error as ErrorResponse).response?.data?.message ?? String(error)
     );
     return [];
   }
@@ -84,7 +84,7 @@ export const fetchStatsByNameRange = async (
   } catch (error) {
     console.error(
       'Error fetching stats by name and range:',
-      (error as ErrorResponse).response.data.message ?? String(error)
+      (error as ErrorResponse).response?.data?.message ?? String(error)
     );
     return [];
   }
@@ -112,11 +112,20 @@ export const fetchMLInsights = async (
       }
     });
 
-    return response.data.recommendations[0].tips;
+    if (
+      response?.data?.recommendations !== undefined &&
+      Array.isArray(response.data.recommendations) &&
+      response.data.recommendations.length > 0 &&
+      response.data.recommendations[0].tips !== undefined
+    ) {
+      return response.data.recommendations[0].tips;
+    }
+
+    return [];
   } catch (error) {
     console.error(
       'Error fetching ML insights:',
-      (error as ErrorResponse).response.data.message ?? String(error)
+      (error as ErrorResponse).response?.data?.message ?? String(error)
     );
     return [];
   }
