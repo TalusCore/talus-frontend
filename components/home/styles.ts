@@ -26,3 +26,28 @@ export const scrollViewStyles = StyleSheet.create({
     alignItems: 'center'
   }
 });
+
+export const fitnessTipStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: '90%'
+  },
+  cardLabel: {
+    fontSize: 16,
+    color: '#6B7280'
+  },
+  cardValue: {
+    fontSize: 20,
+    color: '#111827',
+    fontWeight: 'bold',
+    marginTop: 4
+  }
+});

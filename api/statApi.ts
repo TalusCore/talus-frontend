@@ -89,3 +89,35 @@ export const fetchStatsByNameRange = async (
     return [];
   }
 };
+
+export const fetchMLInsights = async (
+  talusId: string,
+  age: number,
+  weight: number,
+  height: number,
+  steps: number,
+  gender: string,
+  fitnessLevel: number
+): Promise<string[]> => {
+  try {
+    const response = await apiClient.get('/stat/ml_insights', {
+      params: {
+        talusId,
+        age,
+        weight_kg: weight,
+        height_cm: height,
+        steps_per_day: steps,
+        gender,
+        fitness_level: fitnessLevel
+      }
+    });
+
+    return response.data.recommendations[0].tips;
+  } catch (error) {
+    console.error(
+      'Error fetching ML insights:',
+      (error as ErrorResponse).response.data.message ?? String(error)
+    );
+    return [];
+  }
+};
