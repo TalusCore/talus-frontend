@@ -1,8 +1,8 @@
-import type { ResponseStat, Stat } from './types';
+import type { ResponseStat, Stat, StatName } from './types';
 
 const ROLLING_AVERAGE_WINDOW = 5;
 
-export const newStatData = (name: string, stats?: ResponseStat[]): Stat[] => {
+export const newStatData = (name: StatName, stats?: ResponseStat[]): Stat[] => {
   const newStats = stats ?? [];
 
   return newStats
@@ -13,7 +13,7 @@ export const newStatData = (name: string, stats?: ResponseStat[]): Stat[] => {
     }));
 };
 
-export const MostRecentValues = (stats: Stat[]): Stat[] => {
+export const mostRecentValues = (stats: Stat[]): Stat[] => {
   const sortedStats = [...stats].sort(
     (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
   );
@@ -88,4 +88,20 @@ export const totalHealthScore = (
     6;
 
   return Math.round(totalScore);
+};
+
+export const getAge = (birthday: Date): number => {
+  const today = new Date();
+  const birthDate = new Date(birthday);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age -= 1;
+  }
+
+  return age;
 };

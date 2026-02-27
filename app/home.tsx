@@ -1,15 +1,20 @@
 import { fetchMLInsights, fetchStats } from '@/api/statApi';
-import { homeStyles, scrollViewStyles } from '@/components/home/styles';
-import type { Stat } from '@/components/home/types';
 import {
-  MostRecentValues,
+  fitnessTipStyles,
+  homeStyles,
+  scrollViewStyles
+} from '@/components/home/styles';
+import type { RollingStatName, Stat } from '@/components/home/types';
+import {
   averageStat,
+  getAge,
+  mostRecentValues,
   newStatData,
   startOfToday,
   sumValues,
   totalHealthScore
 } from '@/components/home/utils';
-import StatCard, { statCardStyles } from '@/components/statCard';
+import StatCard from '@/components/statCard';
 import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
@@ -30,22 +35,6 @@ const Home = (): React.JSX.Element => {
   const lastUpdate = useRef<Date | null>(null);
   const hasFetchedInsights = useRef(false);
   const mlInsightsRef = useRef<string[]>([]);
-
-  const getAge = (birthday: Date): number => {
-    const today = new Date();
-    const birthDate = new Date(birthday);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age -= 1;
-    }
-
-    return age;
-  };
 
   const temperatureAvg = useMemo(() => averageStat(temperature), [temperature]);
   const pressureAvg = useMemo(() => averageStat(pressure), [pressure]);
@@ -71,12 +60,15 @@ const Home = (): React.JSX.Element => {
 
       resetState();
 
-      const rollingAverageStats = [
-        { name: 'temperature' as const, setter: setTemperature },
-        { name: 'pressure' as const, setter: setPressure },
-        { name: 'humidity' as const, setter: setHumidity },
-        { name: 'altitude' as const, setter: setAltitude },
-        { name: 'bpm' as const, setter: setBpm }
+      const rollingAverageStats: {
+        name: RollingStatName;
+        setter: React.Dispatch<React.SetStateAction<Stat[]>>;
+      }[] = [
+        { name: 'temperature', setter: setTemperature },
+        { name: 'pressure', setter: setPressure },
+        { name: 'humidity', setter: setHumidity },
+        { name: 'altitude', setter: setAltitude },
+        { name: 'bpm', setter: setBpm }
       ];
 
       const fetchData = async (): Promise<void> => {
@@ -93,7 +85,7 @@ const Home = (): React.JSX.Element => {
 
           if (response.success) {
             if (response.stats && response.stats.length > 0) {
-              const updatedStats = {
+              const updatedStats: Record<RollingStatName, Stat[]> = {
                 temperature: temperature,
                 pressure: pressure,
                 humidity: humidity,
@@ -103,7 +95,7 @@ const Home = (): React.JSX.Element => {
 
               rollingAverageStats.forEach(({ name, setter }) => {
                 const statData = newStatData(name, response.stats);
-                const merged = MostRecentValues([
+                const merged = mostRecentValues([
                   ...updatedStats[name],
                   ...statData
                 ]);
@@ -168,9 +160,9 @@ const Home = (): React.JSX.Element => {
         style={scrollViewStyles.container}
         contentContainerStyle={scrollViewStyles.containerContent}
       >
-        <View style={statCardStyles.card}>
-          <Text style={statCardStyles.cardLabel}>Fitness Tip</Text>
-          <Text style={statCardStyles.cardValue}>
+        <View style={fitnessTipStyles.card}>
+          <Text style={fitnessTipStyles.cardLabel}>Fitness Tip</Text>
+          <Text style={fitnessTipStyles.cardValue}>
             {mlInsights[mlInsightIndex] ?? 'No fitness tips available'}
           </Text>
         </View>
