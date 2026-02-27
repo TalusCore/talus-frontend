@@ -1,4 +1,4 @@
-import { fetchStats } from '@/api/statApi';
+import { fetchMLInsights, fetchStats } from '@/api/statApi';
 import { homeStyles, scrollViewStyles } from '@/components/home/styles';
 import type { Stat } from '@/components/home/types';
 import {
@@ -9,7 +9,7 @@ import {
   sumValues,
   totalHealthScore
 } from '@/components/home/utils';
-import StatCard from '@/components/statCard';
+import StatCard, { statCardStyles } from '@/components/statCard';
 import { capitalizeFirstLetter } from '@/components/utils';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
@@ -25,7 +25,27 @@ const Home = (): React.JSX.Element => {
   const [altitude, setAltitude] = useState<Stat[]>([]);
   const [bpm, setBpm] = useState<Stat[]>([]);
   const [steps, setSteps] = useState<number>(0);
+  const [mlInsightIndex, setMlInsightIndex] = useState<number>(0);
+  const [mlInsights, setMlInsights] = useState<string[]>([]);
   const lastUpdate = useRef<Date | null>(null);
+  const hasFetchedInsights = useRef(false);
+  const mlInsightsRef = useRef<string[]>([]);
+
+  const getAge = (birthday: Date): number => {
+    const today = new Date();
+    const birthDate = new Date(birthday);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age -= 1;
+    }
+
+    return age;
+  };
 
   const temperatureAvg = useMemo(() => averageStat(temperature), [temperature]);
   const pressureAvg = useMemo(() => averageStat(pressure), [pressure]);
@@ -35,17 +55,21 @@ const Home = (): React.JSX.Element => {
 
   useFocusEffect(
     useCallback(() => {
-      const resetStats = (): void => {
+      const resetState = (): void => {
         setTemperature([]);
         setPressure([]);
         setHumidity([]);
         setAltitude([]);
         setBpm([]);
         setSteps(0);
+        setMlInsights([]);
+        setMlInsightIndex(0);
+        mlInsightsRef.current = [];
         lastUpdate.current = null;
+        hasFetchedInsights.current = false;
       };
 
-      resetStats();
+      resetState();
 
       const rollingAverageStats = [
         { name: 'temperature' as const, setter: setTemperature },
@@ -59,6 +83,7 @@ const Home = (): React.JSX.Element => {
         if (!talus) return;
 
         const startTime = lastUpdate.current ?? startOfToday();
+        lastUpdate.current = new Date();
 
         try {
           const response = await fetchStats({
@@ -68,17 +93,58 @@ const Home = (): React.JSX.Element => {
 
           if (response.success) {
             if (response.stats && response.stats.length > 0) {
+              const updatedStats = {
+                temperature: temperature,
+                pressure: pressure,
+                humidity: humidity,
+                altitude: altitude,
+                bpm: bpm
+              };
+
               rollingAverageStats.forEach(({ name, setter }) => {
                 const statData = newStatData(name, response.stats);
-                setter(prev => MostRecentValues([...prev, ...statData]));
+                const merged = MostRecentValues([
+                  ...updatedStats[name],
+                  ...statData
+                ]);
+                updatedStats[name] = merged;
+                setter(merged);
               });
 
               const stepData = newStatData('steps', response.stats);
               const totalSteps = sumValues(stepData.map(s => s.value));
               setSteps(prev => prev + totalSteps);
-            }
 
-            lastUpdate.current = new Date();
+              if (!hasFetchedInsights.current && user) {
+                hasFetchedInsights.current = true;
+                const age = getAge(user.birthday);
+                const fitnessLevel = totalHealthScore(
+                  averageStat(updatedStats.temperature),
+                  averageStat(updatedStats.pressure),
+                  averageStat(updatedStats.humidity),
+                  averageStat(updatedStats.altitude),
+                  averageStat(updatedStats.bpm),
+                  steps + totalSteps
+                );
+                const insight = await fetchMLInsights(
+                  talus.talusId,
+                  age,
+                  user.weight,
+                  user.height,
+                  steps + totalSteps,
+                  user.gender,
+                  fitnessLevel
+                );
+                setMlInsights(insight);
+                mlInsightsRef.current = insight;
+              }
+            }
+          }
+
+          if (mlInsightsRef.current.length > 0) {
+            setMlInsightIndex(
+              prev => (prev + 1) % mlInsightsRef.current.length
+            );
           }
         } catch (error) {
           console.error('Error fetching stats:', error);
@@ -90,7 +156,7 @@ const Home = (): React.JSX.Element => {
       const intervalId = setInterval(fetchData, 5000);
 
       return (): void => clearInterval(intervalId);
-    }, [talus])
+    }, [talus, user])
   );
 
   return (
@@ -102,6 +168,12 @@ const Home = (): React.JSX.Element => {
         style={scrollViewStyles.container}
         contentContainerStyle={scrollViewStyles.containerContent}
       >
+        <View style={statCardStyles.card}>
+          <Text style={statCardStyles.cardLabel}>Fitness Tip</Text>
+          <Text style={statCardStyles.cardValue}>
+            {mlInsights[mlInsightIndex] ?? 'No fitness tips available'}
+          </Text>
+        </View>
         {[
           {
             label: 'Total Health Score',

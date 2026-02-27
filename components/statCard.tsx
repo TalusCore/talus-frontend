@@ -15,7 +15,7 @@ const StatCard = ({
   </View>
 );
 
-const statCardStyles = StyleSheet.create({
+export const statCardStyles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     padding: 16,
