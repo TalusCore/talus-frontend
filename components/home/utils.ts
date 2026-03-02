@@ -39,57 +39,6 @@ export const startOfToday = (): Date => {
   return d;
 };
 
-export const totalHealthScore = (
-  temperature: number,
-  pressure: number,
-  humidity: number,
-  altitude: number,
-  bpm: number,
-  steps: number
-): number => {
-  const idealTemperature = 37;
-  const idealPressure = 1013;
-  const idealHumidity = 45;
-  const idealAltitude = 300;
-  const idealBPM = 70;
-  const targetSteps = 10000;
-
-  const temperatureScore = Math.max(
-    0,
-    100 - Math.abs(temperature - idealTemperature) * 2
-  );
-
-  const pressureScore = Math.max(
-    0,
-    100 - Math.abs(pressure - idealPressure) * 0.05
-  );
-
-  const humidityScore = Math.max(
-    0,
-    100 - Math.abs(humidity - idealHumidity) * 1.5
-  );
-
-  const altitudeScore = Math.max(
-    0,
-    100 - Math.abs(altitude - idealAltitude) * 0.01
-  );
-
-  const bpmScore = Math.max(0, 100 - Math.abs(bpm - idealBPM) * 1);
-
-  const stepsScore = Math.min(100, (steps / targetSteps) * 100);
-
-  const totalScore =
-    (temperatureScore +
-      pressureScore +
-      humidityScore +
-      altitudeScore +
-      bpmScore +
-      stepsScore) /
-    6;
-
-  return Math.round(totalScore);
-};
-
 export const getAge = (birthday: Date): number => {
   const today = new Date();
   const birthDate = new Date(birthday);

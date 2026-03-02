@@ -11,8 +11,7 @@ import {
   mostRecentValues,
   newStatData,
   startOfToday,
-  sumValues,
-  totalHealthScore
+  sumValues
 } from '@/components/home/utils';
 import StatCard from '@/components/statCard';
 import { capitalizeFirstLetter } from '@/components/utils';
@@ -144,20 +143,8 @@ const Home = (): React.JSX.Element => {
               const totalFlights = sumValues(flightsData.map(s => s.value));
               setFlights(prev => prev + totalFlights);
 
-              const healthScore = totalHealthScore(
-                averageStat(updatedStats.temperature),
-                averageStat(updatedStats.pressure),
-                averageStat(updatedStats.humidity),
-                averageStat(updatedStats.altitude),
-                averageStat(updatedStats.bpm),
-                steps + totalSteps
-              );
-              const adjustedHealthScore =
-                (healthScore + averageStat(updatedStats.tpi)) / 2;
-
               if (mlInsightsRef.current.length === 0 && user) {
                 const age = getAge(user.birthday);
-                const fitnessLevel = adjustedHealthScore;
                 const insight = await fetchMLInsights(
                   talus.talusId,
                   age,
@@ -165,7 +152,7 @@ const Home = (): React.JSX.Element => {
                   user.height,
                   steps + totalSteps,
                   user.gender,
-                  fitnessLevel
+                  averageStat(updatedStats.tpi)
                 );
                 setMlInsights(insight);
                 mlInsightsRef.current = insight;
@@ -207,20 +194,7 @@ const Home = (): React.JSX.Element => {
           </Text>
         </View>
         {[
-          {
-            label: 'Total Health Score',
-            value:
-              (totalHealthScore(
-                temperatureAvg,
-                pressureAvg,
-                humidityAvg,
-                altitudeAvg,
-                bpmAvg,
-                steps
-              ) +
-                tpiAvg) /
-              2
-          },
+          { label: 'Health Score', value: tpiAvg },
 
           { label: 'Heart Rate (BPM)', value: bpmAvg },
           { label: 'Blood Oxygen (%)', value: spo2Avg },
@@ -229,10 +203,7 @@ const Home = (): React.JSX.Element => {
           { label: 'Cadence (steps/min)', value: cadenceAvg },
           { label: 'Flights Climbed', value: flights },
 
-          {
-            label: 'Avg Force (N)',
-            value: forceAvg * heightMultiplier
-          },
+          { label: 'Avg Force (N)', value: forceAvg * heightMultiplier },
           { label: 'Avg Power (W)', value: powerAvg * weightMultiplier },
 
           { label: 'Temperature (°C)', value: temperatureAvg },
