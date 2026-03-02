@@ -22,14 +22,28 @@ import { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
+const DEFAULT_HEIGHT_CM = 175;
+const DEFAULT_WEIGHT_KG = 70;
+
 const Home = (): React.JSX.Element => {
   const { talus, user } = useContext(AuthContext);
+  const heightMultiplier =
+    user?.height !== undefined ? user.height / DEFAULT_HEIGHT_CM : 1;
+  const weightMultiplier =
+    user?.weight !== undefined ? user.weight / DEFAULT_WEIGHT_KG : 1;
+
   const [temperature, setTemperature] = useState<Stat[]>([]);
   const [pressure, setPressure] = useState<Stat[]>([]);
   const [humidity, setHumidity] = useState<Stat[]>([]);
   const [altitude, setAltitude] = useState<Stat[]>([]);
   const [bpm, setBpm] = useState<Stat[]>([]);
   const [steps, setSteps] = useState<number>(0);
+  const [cadence, setCadence] = useState<Stat[]>([]);
+  const [force, setForce] = useState<Stat[]>([]);
+  const [power, setPower] = useState<Stat[]>([]);
+  const [spo2, setSpo2] = useState<Stat[]>([]);
+  const [flights, setFlights] = useState<number>(0);
+  const [tpi, setTpi] = useState<Stat[]>([]);
   const [mlInsightIndex, setMlInsightIndex] = useState<number>(0);
   const [mlInsights, setMlInsights] = useState<string[]>([]);
   const lastUpdate = useRef<Date | null>(null);
@@ -40,6 +54,11 @@ const Home = (): React.JSX.Element => {
   const humidityAvg = useMemo(() => averageStat(humidity), [humidity]);
   const altitudeAvg = useMemo(() => averageStat(altitude), [altitude]);
   const bpmAvg = useMemo(() => averageStat(bpm), [bpm]);
+  const cadenceAvg = useMemo(() => averageStat(cadence), [cadence]);
+  const forceAvg = useMemo(() => averageStat(force), [force]);
+  const powerAvg = useMemo(() => averageStat(power), [power]);
+  const spo2Avg = useMemo(() => averageStat(spo2), [spo2]);
+  const tpiAvg = useMemo(() => averageStat(tpi), [tpi]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,6 +69,12 @@ const Home = (): React.JSX.Element => {
         setAltitude([]);
         setBpm([]);
         setSteps(0);
+        setCadence([]);
+        setForce([]);
+        setPower([]);
+        setSpo2([]);
+        setFlights(0);
+        setTpi([]);
         setMlInsights([]);
         setMlInsightIndex(0);
         mlInsightsRef.current = [];
@@ -66,7 +91,12 @@ const Home = (): React.JSX.Element => {
         { name: 'pressure', setter: setPressure },
         { name: 'humidity', setter: setHumidity },
         { name: 'altitude', setter: setAltitude },
-        { name: 'bpm', setter: setBpm }
+        { name: 'bpm', setter: setBpm },
+        { name: 'cadence', setter: setCadence },
+        { name: 'force', setter: setForce },
+        { name: 'power', setter: setPower },
+        { name: 'spo2', setter: setSpo2 },
+        { name: 'tpi', setter: setTpi }
       ];
 
       const fetchData = async (): Promise<void> => {
@@ -88,7 +118,12 @@ const Home = (): React.JSX.Element => {
                 pressure: pressure,
                 humidity: humidity,
                 altitude: altitude,
-                bpm: bpm
+                bpm: bpm,
+                cadence: cadence,
+                force: force,
+                power: power,
+                spo2: spo2,
+                tpi: tpi
               };
 
               rollingAverageStats.forEach(({ name, setter }) => {
@@ -105,16 +140,24 @@ const Home = (): React.JSX.Element => {
               const totalSteps = sumValues(stepData.map(s => s.value));
               setSteps(prev => prev + totalSteps);
 
+              const flightsData = newStatData('flights', response.stats);
+              const totalFlights = sumValues(flightsData.map(s => s.value));
+              setFlights(prev => prev + totalFlights);
+
+              const healthScore = totalHealthScore(
+                averageStat(updatedStats.temperature),
+                averageStat(updatedStats.pressure),
+                averageStat(updatedStats.humidity),
+                averageStat(updatedStats.altitude),
+                averageStat(updatedStats.bpm),
+                steps + totalSteps
+              );
+              const adjustedHealthScore =
+                (healthScore + averageStat(updatedStats.tpi)) / 2;
+
               if (mlInsightsRef.current.length === 0 && user) {
                 const age = getAge(user.birthday);
-                const fitnessLevel = totalHealthScore(
-                  averageStat(updatedStats.temperature),
-                  averageStat(updatedStats.pressure),
-                  averageStat(updatedStats.humidity),
-                  averageStat(updatedStats.altitude),
-                  averageStat(updatedStats.bpm),
-                  steps + totalSteps
-                );
+                const fitnessLevel = adjustedHealthScore;
                 const insight = await fetchMLInsights(
                   talus.talusId,
                   age,
@@ -166,21 +209,36 @@ const Home = (): React.JSX.Element => {
         {[
           {
             label: 'Total Health Score',
-            value: totalHealthScore(
-              temperatureAvg,
-              pressureAvg,
-              humidityAvg,
-              altitudeAvg,
-              bpmAvg,
-              steps
-            )
+            value:
+              (totalHealthScore(
+                temperatureAvg,
+                pressureAvg,
+                humidityAvg,
+                altitudeAvg,
+                bpmAvg,
+                steps
+              ) +
+                tpiAvg) /
+              2
           },
-          { label: 'Temperature', value: temperatureAvg },
-          { label: 'Pressure', value: pressureAvg },
-          { label: 'Humidity', value: humidityAvg },
-          { label: 'Altitude', value: altitudeAvg },
-          { label: 'BPM', value: bpmAvg },
-          { label: 'Steps', value: steps }
+
+          { label: 'Heart Rate (BPM)', value: bpmAvg },
+          { label: 'Blood Oxygen (%)', value: spo2Avg },
+
+          { label: 'Steps', value: steps },
+          { label: 'Cadence (steps/min)', value: cadenceAvg },
+          { label: 'Flights Climbed', value: flights },
+
+          {
+            label: 'Avg Force (N)',
+            value: forceAvg * heightMultiplier
+          },
+          { label: 'Avg Power (W)', value: powerAvg * weightMultiplier },
+
+          { label: 'Temperature (°C)', value: temperatureAvg },
+          { label: 'Pressure (hPa)', value: pressureAvg },
+          { label: 'Humidity (%)', value: humidityAvg },
+          { label: 'Altitude (m)', value: altitudeAvg }
         ].map(card => (
           <StatCard key={card.label} label={card.label} value={card.value} />
         ))}
