@@ -9,9 +9,15 @@ export type StatName =
   | 'humidity'
   | 'altitude'
   | 'bpm'
-  | 'steps';
+  | 'steps'
+  | 'cadence'
+  | 'force'
+  | 'power'
+  | 'spo2'
+  | 'flights'
+  | 'tpi';
 
-export type RollingStatName = Exclude<StatName, 'steps'>;
+export type RollingStatName = Exclude<StatName, 'steps' | 'flights'>;
 
 export type ResponseStat = {
   statName: string;
