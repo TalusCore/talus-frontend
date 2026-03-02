@@ -139,7 +139,7 @@ const Home = (): React.JSX.Element => {
               const totalSteps = sumValues(stepData.map(s => s.value));
               setSteps(prev => prev + totalSteps);
 
-              const flightsData = newStatData('flights', response.stats);
+              const flightsData = newStatData('flightsClimbed', response.stats);
               const totalFlights = sumValues(flightsData.map(s => s.value));
               setFlights(prev => prev + totalFlights);
 

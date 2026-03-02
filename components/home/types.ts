@@ -14,10 +14,10 @@ export type StatName =
   | 'force'
   | 'power'
   | 'spo2'
-  | 'flights'
+  | 'flightsClimbed'
   | 'tpi';
 
-export type RollingStatName = Exclude<StatName, 'steps' | 'flights'>;
+export type RollingStatName = Exclude<StatName, 'steps' | 'flightsClimbed'>;
 
 export type ResponseStat = {
   statName: string;
